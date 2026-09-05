@@ -1,0 +1,20 @@
+{
+  "name": "estate-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "migrate:local": "for f in db/migrations/*.sql; do wrangler d1 execute estate-db --local --file \"$f\"; done",
+    "migrate:remote": "for f in db/migrations/*.sql; do wrangler d1 execute estate-db --remote --file \"$f\"; done"
+  },
+  "dependencies": {
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.99.0"
+  }
+}

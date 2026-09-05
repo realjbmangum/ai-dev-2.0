@@ -1,0 +1,27 @@
+name = "estate-api"
+main = "src/index.ts"
+compatibility_date = "2026-09-05"
+compatibility_flags = ["nodejs_compat"]
+
+# Watchy. Every 15 minutes.
+#
+# A Worker cron and not a cloud routine, deliberately. Two of the three routines this
+# estate was watching stopped firing without producing a single run session, while the
+# Cloudflare cron platform ran every 15 minutes throughout. More importantly: a watcher
+# that lives on the rail it watches can be deleted by editing a routine list, which is
+# exactly how Tally and Chiefy disappeared in August with nothing noticing either.
+[triggers]
+crons = ["*/15 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "estate-db"
+# database_id is filled in after `wrangler d1 create estate-db`.
+database_id = "REPLACE_ME"
+
+# Secrets, set with `wrangler secret put`. Names only here, never values:
+# private is still not a place for secrets, because repos get opened.
+#
+#   ESTATE_TOKEN   bearer for every /api route. 32 chars minimum, enforced in code.
+#   NOTIFY_URL     optional webhook the watcher posts findings to. Gated on
+#                  estate_control.notify_enabled, which ships off.

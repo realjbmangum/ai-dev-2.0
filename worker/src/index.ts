@@ -1,0 +1,88 @@
+/**
+ * estate-api. The spine every scheduled thing in the estate reports to.
+ *
+ * Two surfaces:
+ *   fetch()     the bearer-gated API agents call
+ *   scheduled() Watchy, every 15 minutes
+ *
+ * The API never becomes a general database passthrough. Every verb it grows is trust
+ * spent, and the reason this exists at all is that headless agents have no browser
+ * session and no wrangler, so HTTPS is their only route to the data.
+ */
+
+import { Hono } from "hono";
+import type { Bindings } from "./types";
+import { guard } from "./lib/auth";
+import { runWatchy } from "./lib/watchy";
+import { readControl } from "./lib/control";
+import registryRoutes from "./routes/registry";
+import runRoutes from "./routes/runs";
+
+const app = new Hono<{ Bindings: Bindings }>();
+
+/**
+ * Liveness only, and deliberately unauthenticated: it says nothing about the estate.
+ * Every route that reveals anything sits behind the guard below.
+ */
+app.get("/health", (c) =>
+  c.json({ status: "ok", service: "estate-api", at: new Date().toISOString() })
+);
+
+// Everything under /api is rate limited, then authenticated, in that order.
+app.use("/api/*", async (c, next) => {
+  const g = await guard(c.req.raw, c.env);
+  if (!g.ok) return g.response;
+  await next();
+});
+
+app.route("/api/registry", registryRoutes);
+app.route("/api/runs", runRoutes);
+
+/**
+ * What an agent reads at the top of its run: the switches it must obey, and how much of
+ * the fleet is currently in trouble. One call, so no agent has a reason to skip it.
+ */
+app.get("/api/state", async (c) => {
+  const control = await readControl(c.env);
+
+  const counts = await c.env.DB.prepare(
+    `SELECT
+       (SELECT COUNT(*) FROM registry WHERE status = 'active')      AS active,
+       (SELECT COUNT(*) FROM registry WHERE status = 'planned')     AS planned,
+       (SELECT COUNT(*) FROM findings WHERE closed_at IS NULL)      AS open_findings,
+       (SELECT COUNT(*) FROM registry
+         WHERE status = 'active' AND first_run_at IS NULL)          AS never_ran`
+  ).first();
+
+  return c.json({
+    control,
+    counts,
+    // Precomputed so no agent has to decide for itself what "nothing to report" means,
+    // and so all clear means the same thing every time it is said.
+    all_clear: (counts?.open_findings ?? 0) === 0,
+    at: new Date().toISOString(),
+  });
+});
+
+/** Run Watchy on demand, for the acceptance test and for a cockpit session. */
+app.post("/api/watchy/run", async (c) => {
+  const result = await runWatchy(c.env);
+  return c.json(result);
+});
+
+app.all("*", (c) => c.json({ error: "not found" }, 404));
+
+export default {
+  fetch: app.fetch,
+
+  async scheduled(_event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
+    ctx.waitUntil(
+      runWatchy(env).catch((err) => {
+        // Watchy failing silently would be the same class of bug it exists to catch, so
+        // the error is logged loudly. It still writes its own agent_runs row via
+        // recordRun, which never throws.
+        console.error("watchy failed", err);
+      })
+    );
+  },
+};
