@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Estate</title>
+<style>
+  :root{
+    --ink:#14161b; --ink2:#464c55; --ink3:#767d87; --ink4:#a8aeb6;
+    --bg:#f7f5f2; --card:#fff; --line:#e4e0da; --line2:#d3cec6;
+    --red:#a3262b; --redbg:#fdf2f2; --redline:#eccccd;
+    --amber:#8a5a12; --amberbg:#fdf8ef; --amberline:#eddcbe;
+    --green:#1f6b45; --greenbg:#eef7f2; --greenline:#c2ded0;
+    --blue:#20527d; --bluebg:#eef4fa; --blueline:#b9d2e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:48px 26px 110px}
+
+  header{border-bottom:3px solid var(--ink);padding-bottom:20px;margin-bottom:14px}
+  .eyebrow{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);
+    font-weight:700;margin-bottom:11px}
+  h1{font-size:40px;line-height:1.08;margin:0 0 10px;letter-spacing:-.03em}
+  .sub{color:var(--ink2);font-size:17px;margin:0;max-width:660px}
+  .asof{font-size:12.5px;color:var(--ink3);margin-top:16px;font-variant-numeric:tabular-nums;
+    padding-top:12px;border-top:1px solid var(--line)}
+
+  h2{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);
+    margin:56px 0 5px;font-weight:700}
+  h2 + .h2sub{font-size:25px;letter-spacing:-.02em;margin:0 0 18px;font-weight:600;line-height:1.25}
+  h3{font-size:17px;margin:28px 0 8px;letter-spacing:-.01em}
+  p{margin:0 0 14px}
+  code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:#efece7;padding:1.5px 5px;border-radius:3px;color:#3a3e46}
+
+  .lede{font-size:19px;line-height:1.55;margin:22px 0}
+
+  .alarm{border:2px solid var(--red);background:var(--redbg);border-radius:11px;
+    padding:20px 22px;margin:24px 0}
+  .alarm .t{font-weight:700;font-size:18px;margin-bottom:8px;color:var(--red)}
+  .alarm p:last-child{margin-bottom:0}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:20px 0 28px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:13px 14px}
+  .stat b{display:block;font-size:26px;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat span{display:block;font-size:11px;color:var(--ink3);margin-top:5px;line-height:1.35}
+  .stat.bad b{color:var(--red)} .stat.warn b{color:var(--amber)} .stat.ok b{color:var(--green)}
+
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0 24px;
+    border:1px solid var(--line);border-radius:10px;background:var(--card)}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+  th{text-align:left;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);
+    padding:10px 12px;border-bottom:2px solid var(--line);font-weight:700;background:#fbfaf8;white-space:nowrap}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+  tr:last-child td{border-bottom:none}
+  td.n{white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:2px 7px;border-radius:3px;white-space:nowrap}
+  .p-you{background:var(--redbg);color:var(--red);border:1px solid var(--redline)}
+  .p-me{background:var(--bluebg);color:var(--blue);border:1px solid var(--blueline)}
+  .p-ok{background:var(--greenbg);color:var(--green);border:1px solid var(--greenline)}
+  .p-warn{background:var(--amberbg);color:var(--amber);border:1px solid var(--amberline)}
+
+  .box{border-left:3px solid var(--line2);background:var(--card);padding:16px 19px;margin:20px 0;
+    border-radius:0 9px 9px 0}
+  .box.red{border-left-color:var(--red);background:var(--redbg)}
+  .box.amber{border-left-color:var(--amber);background:var(--amberbg)}
+  .box.green{border-left-color:var(--green);background:var(--greenbg)}
+  .box.blue{border-left-color:var(--blue);background:var(--bluebg)}
+  .box .t{font-weight:700;margin-bottom:6px}
+  .box p:last-child{margin-bottom:0}
+
+  ol.rank{counter-reset:r;list-style:none;padding:0;margin:18px 0}
+  ol.rank li{counter-increment:r;position:relative;padding:15px 18px 15px 54px;background:var(--card);
+    border:1px solid var(--line);border-radius:9px;margin-bottom:10px}
+  ol.rank li::before{content:counter(r);position:absolute;left:16px;top:15px;width:24px;height:24px;
+    border-radius:50%;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  ol.rank li.you{border-color:var(--redline);background:var(--redbg)}
+  ol.rank li.you::before{background:var(--red)}
+  ol.rank b{display:block;margin-bottom:4px;font-size:15.5px}
+
+  blockquote{margin:14px 0;padding:12px 18px;border-left:3px solid var(--line2);
+    background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2);font-size:15px}
+  ul{margin:0 0 14px;padding-left:20px} li{margin-bottom:6px}
+  .quiet{color:var(--ink3);font-size:13.5px}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink3);font-size:13px}
+  @media print{body{background:#fff}.wrap{padding:0}table,.box,.alarm,.stat,ol.rank li{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lighthouse 27 &middot; supersedes four documents</div>
+  <h1>The Estate</h1>
+  <p class="sub">What is running, what needs you, and what is still wrong. Every number verified against a live system, not against a document.</p>
+  <p class="asof"><b>As of 7 September 2026, 17:35 UTC.</b> Four control values and six run rows changed during the eight minutes it took to audit this, so every figure below carries a time. Repo HEAD <code>0aa6130</code>, working tree clean.</p>
+</header>
+
+<!-- ============ LEAD ============ -->
+
+<div class="alarm">
+  <div class="t">The estate has an open finding and no way to tell you about it.</div>
+  <p>Finding 1 opened at 17:27:22 against <code>directories:tidy</code>, and <code>notified_at</code> is null. It will stay null. <code>notify_enabled</code> is <code>0</code>, <b>and <code>NOTIFY_URL</code> is not set as a secret at all</b>, so the outward path is blocked at two independent layers and only one of them is a switch. Flipping the switch today would change nothing.</p>
+  <p>The detection half works, and proved it three minutes after being armed. <b>The delivery half does not exist.</b></p>
+</div>
+
+<div class="box amber">
+  <div class="t">Three rows are active. The watcher is watching two of them.</div>
+  <p><code>estate:voicey</code> is active with <code>expected_every_minutes</code> null, because on-demand cockpit work has no cadence to miss. Watchy's query filters on a non-null cadence, so it reports <b>"2 of 2 healthy"</b> while three rows are active. That is correct behaviour and a confusing sentence, and it is worth knowing before it looks like a bug.</p>
+  <p>Seventeen rows are <code>planned</code> and have never reported once. <b>Seven of those seventeen are real Worker crons doing real work right now, unwatched.</b></p>
+</div>
+
+<div class="stats">
+  <div class="stat"><b>20</b><span>registered</span></div>
+  <div class="stat ok"><b>3</b><span>active</span></div>
+  <div class="stat warn"><b>2</b><span>actually watched</span></div>
+  <div class="stat bad"><b>1</b><span>open finding</span></div>
+  <div class="stat bad"><b>0</b><span>ways to reach you</span></div>
+  <div class="stat"><b>10</b><span>run reports, ever</span></div>
+  <div class="stat bad"><b>0</b><span>rows a human confirmed</span></div>
+  <div class="stat"><b>15h</b><span>age of estate-db</span></div>
+</div>
+
+<p class="quiet">Every "first ever" and "has never happened" in this document is a statement about fifteen hours. <code>estate-db</code> was created at 02:11:20 today. There is no backup or export step anywhere in the repo, and D1 Time Travel cannot reach behind a creation date of today.</p>
+
+<!-- ============ NEEDS YOU ============ -->
+<h2>One</h2>
+<div class="h2sub">What needs you</div>
+
+<ol class="rank">
+  <li class="you">
+    <b>A public repo is still carrying a client call transcript. <span class="pill p-you">three days open</span></b>
+    <p>Re-verified against the GitHub API at 17:33 today. <code>realjbmangum/site-suitemanagerllc</code> is <code>PUBLIC</code>, default branch <code>main</code>, and <code>app-suitemanager/data/Meeting Notes/</code> holds <code>transcript-clean.txt</code> (72,135 bytes), a <code>.docx</code> (2.8 MB) and a <code>.vtt</code> (110 KB). A verbatim client call, naming real people.</p>
+    <p>This was flagged on 5 September and is still there. The <code>.gitignore</code> rule added in July does not untrack files that were already committed. It needs the repo made private, the history rewritten, and the content treated as already leaked. <b>It is the only item on this page with a named third party attached to it.</b></p>
+  </li>
+  <li class="you">
+    <b>Nothing can reach you. <span class="pill p-you">you only</span></b>
+    <p><code>wrangler secret list</code> returns exactly one secret, <code>ESTATE_TOKEN</code>. <code>watchy.ts</code> opens with <code>if (!env.NOTIFY_URL) return;</code>. Until you set that secret, the watcher is a machine writing rows to itself.</p>
+  </li>
+  <li class="you">
+    <b>The Cloudflare Access application, still. <span class="pill p-you">you only</span></b>
+    <p>Directory Machine's command centre is code-complete and deployed dark. Until the Access app exists, no candidate can be approved by any means, and Scouty's thirteen finds cannot become listings.</p>
+  </li>
+  <li>
+    <b>There is no page you can read. <span class="pill p-me">mine</span></b>
+    <p>Every route that reveals state sits behind a bearer token and returns JSON. Your own standing rule is that anything you read is a self-contained HTML file. <b>This document exists because four agents had to go and find out what your own system already knew.</b> One HTML view of <code>/api/state</code>, <code>/api/registry</code> and the findings would replace most of that.</p>
+  </li>
+  <li>
+    <b>Seven live Worker crons, unwatched. <span class="pill p-me">mine</span></b>
+    <p><code>ascend:api-cron</code>, <code>ascend:clt-ev</code>, <code>ascend:masonry-analyzer</code>, <code>crownandcompass:reminders</code>, <code>jbmangum:substack-deploy</code>, <code>personal:mangum-home</code>, <code>personal:shelf</code>. All planned, all never reported. The registry's own note on the Crown and Compass reminders records that on 1 September every send failed on a 401 in the one tick that mattered. It is still the highest-value retrofit and it is still unwatched.</p>
+  </li>
+</ol>
+
+<p class="quiet">Also outstanding and needing a decision rather than work: two lapsed domains, <code>mangumhome.xyz</code> renewing 27 November, Email Routing for patriot.directory, and Google Search Console verification, which costs a permanently missing week of baseline for every week it waits. <code>texasdpsalerts.com/api/health</code> still returns 500 and <code>jbmangum.com/rss.xml</code> still returns 404, both re-verified today.</p>
+
+<!-- ============ RUNNING ============ -->
+<h2>Two</h2>
+<div class="h2sub">What is running, and what it did</div>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Agent</th><th>Rail</th><th>Cadence</th><th>Has it run</th><th>What it did</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>estate:watchy</b></td><td>Worker cron</td><td class="n">15 min</td>
+  <td><span class="pill p-ok">yes, ~61 times</span></td>
+  <td>Wrote <b>4 rows for 61 fires.</b> Row 1 held a single <code>finished_at</code> moving forward across 14h 33m. New rows opened only when the summary text changed. The anti-noise rule holding unattended for a full day.</td>
+</tr>
+<tr>
+  <td><b>estate:voicey</b></td><td>cockpit</td><td class="n">on demand</td>
+  <td><span class="pill p-ok">yes, twice</span></td>
+  <td>Derived the Ascend voice guide from 64 samples. Rewrote the Crown and Compass brand standards. Both merged.</td>
+</tr>
+<tr>
+  <td><b>directories:tidy</b></td><td>cloud routine</td><td class="n">Tue 11:00 ET</td>
+  <td><span class="pill p-ok">yes, four runs</span></td>
+  <td>Stood down when the fleet was off. Dry ran. Then wrote for real: <code>missing_email</code> 50 &rarr; 49.</td>
+</tr>
+<tr>
+  <td colspan="5" class="quiet">Seventeen more rows are registered and have never reported. Ten of them are cloud routines that do not exist yet.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h3>Tidy's first real run, in full</h3>
+
+<p>Fifteen listings attempted, thirteen resolved, one changed. The one change carried its evidence and its undo:</p>
+
+<blockquote>
+<b>BowTied Woodwork</b>, <code>email = support@bowtiewoodworks.com</code>, work_id 29<br>
+from <code>bowtiewoodworks.com/policies/terms-of-service</code><br>
+<i>"SECTION 20 CONTACT INFORMATION. Questions about the Terms of Service should be sent to us at support@bowtiewoodworks.com"</i><br>
+rollback: set email back to null
+</blockquote>
+
+<p><b>Three things it did that nobody told it to.</b></p>
+
+<p><b>It refused three marketplace pages.</b> Two Etsy, one Amazon. Nothing in the spec named either. It reasoned that a marketplace page is not the business's own site, which is the rule, and declined. An agent optimising for a good-looking number would have taken those contact addresses and reported four fills.</p>
+
+<p><b>It checked the live page and found something.</b> The spec says confirm a write on the page, not only in the database. It did, then checked two control listings that already had emails, and reported: <i>"email does not render on the public listing page for ANY business... Not a failed write. The email field is simply not surfaced publicly. A human should confirm that is intended before more email fills are treated as reader-visible improvements."</i> <b>That is a question for you, and it changes whether email is worth working at all.</b></p>
+
+<p><b>It reported its own mess.</b> While learning the work-log API shape it committed a bare row, work_id 27, which cannot be deleted through the API. It said so unprompted and pointed at work_id 29 as the real entry.</p>
+
+<div class="box blue">
+  <div class="t">And it met an anti-AI badge</div>
+  <p><code>barituscatholic.com</code> carries a "Keep Art Human" badge. Tidy classified it as <i>"the owner's stance about their art, not an instruction to me"</i> and changed nothing. The prompt-injection rule holding on the harder case, where the content is not an attack.</p>
+</div>
+
+<!-- ============ CHANGED ============ -->
+<h2>Three</h2>
+<div class="h2sub">What changed since 5 September</div>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Then</th><th>Now</th></tr></thead>
+<tbody>
+<tr><td>Nothing above the individual project</td><td><code>estate-db</code> and <code>estate-api</code> live, cron firing every 15 min</td></tr>
+<tr><td>1 of 26 scheduled things reported coverage</td><td>Still 3 of 20 registered report, but the spine now exists to retrofit into</td></tr>
+<tr><td>patriot-tidy enabled, never produced a run</td><td>Disabled. Replaced by <code>directories:tidy</code>, which has run four times</td></tr>
+<tr><td>Wordy, Designy, Salesy blocked on voice guides</td><td>All three unblocked. Ascend guide derived, C&amp;C standards rewritten, both merged</td></tr>
+<tr><td>Two X voice guides disagreeing</td><td>One. The orphan is deleted, <code>competitors.md</code> salvaged</td></tr>
+<tr><td>One shared bearer token for the fleet</td><td>Per-agent tokens, hash-only storage, an agent can only report as itself</td></tr>
+<tr><td>Specs would live in routine prompts</td><td>Served from D1 with a git SHA, drift-checked. Tidy's prompt is a pointer</td></tr>
+<tr><td>No step between "off" and "writes to production"</td><td><code>dry_run</code>, which ships on</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box amber">
+  <div class="t">The pressure the old document warned about, on day one</div>
+  <p>Document 4 closed with: <i>"Nothing on this page publishes itself. Every row ends at a human. The path to changing that is the verb tier, one verb at a time, after months of drafts needing no edits. Not a switch you flip."</i></p>
+  <p>Today <code>fleet_enabled</code> went 0 to 1 at 17:11:54 and <code>dry_run</code> went 1 to 0 at 17:21:19. <b>Nine minutes and twenty-five seconds apart.</b> That is not a violation, there was a real dry run read in between. It is the exact pressure that paragraph was written to resist, arriving on the first day.</p>
+</div>
+
+<!-- ============ STILL WRONG ============ -->
+<h2>Four</h2>
+<div class="h2sub">What is still wrong</div>
+
+<p>Ranked by consequence, excluding the items in section one.</p>
+
+<ol class="rank">
+  <li><b>The watcher cannot detect its own death.</b>
+  <p>If the <code>estate-api</code> cron stops, <code>last_run_at</code> freezes, no query runs, and <code>/api/state</code> keeps serving whatever <code>all_clear</code> last was. Moving the watcher off the routine rail fixed the deletion failure that killed Tally and Chiefy. <b>It does not fix the silence failure.</b> There is no external dead man's switch. This is the exact failure mode the repo exists to eliminate, still present in the one component that eliminates it for everything else.</p></li>
+
+  <li><b>The registry is hand-edited and already drifting, one day old.</b>
+  <p>Law 1 says the registry is generated. It is not: the seed is 9.4 KB of hand-authored SQL with no generator. Two notes are already wrong. <code>crownandcompass:wordy</code> still says "blocked until brand-standards.md is corrected" when that was corrected yesterday, and <code>estate:loggy</code> still describes writing to <code>ascend-db.session_log</code>, which was explicitly overturned. <b>This is what killed ROSTER.md, reproduced in a new store within a day.</b></p></li>
+
+  <li><b>The served spec's git SHA is a false claim, structurally.</b>
+  <p>Proven today by a 23-second race with a clean tree: <code>specs.synced_at</code> is 17:28:01 and the commit is 17:28:24, so D1 serves post-commit content stamped with the previous SHA. <code>--check</code> cannot catch it, because it compares D1 against the working tree rather than against a commit.</p></li>
+
+  <li><b><code>confirmed_at</code> is null on all twenty rows and no route writes it.</b>
+  <p>The column exists, queries select it, nothing sets it, no finding flags it. By the schema's own rule, borrowed from <code>ascend-db.entities</code>, <b>every row in the registry currently reads as unconfirmed rather than as fact.</b></p></li>
+
+  <li><b>Rules with nothing enforcing them.</b>
+  <p>Hard rule 4, no client data, has zero enforcement and agent free-text lands in four columns with only length caps. Law 4, ground every claim, is prose, and <code>source_note</code> is nullable with no CHECK. Hard rule 6, never hardcode a limit that lives in <code>estate_control</code>, is violated by the rate limiter itself. Hard rule 8, no general passthrough: the README says eight routes, thirteen exist.</p></li>
+
+  <li><b>The rejection trigger has a hole.</b>
+  <p><code>trg_drafts_rejection_needs_reason</code> fires only <code>BEFORE UPDATE OF status</code>. An INSERT setting <code>status='rejected'</code> with a null reason passes both the trigger and the CHECK. The stated reason for having a trigger at all was that something other than the desk will eventually write that table, which is exactly the case the hole is open for.</p></li>
+
+  <li><b>Patriot Directory still has three live front doors, and an agent now runs through one.</b>
+  <p>All three answer <code>/api/automation/health</code> with 401 rather than 404. Two repos deploy against one production database, and the stale one can redeploy on any push. Flagged on 5 September as fix-regardless; the first field agent shipped through it unresolved.</p></li>
+
+  <li><b>No cloud routine has ever opened a pull request.</b>
+  <p><code>allowed_push_branches</code> is empty on every routine and none carries a GitHub connector. Voicey opens PRs, but Voicey is a cockpit task on your Mac with a real checkout, so it proves nothing about the cloud rail. Blogy, Wordy and the archived Thursday writer all depend on a mechanism nobody has demonstrated. <b>The Thursday writer's next scheduled fire is 10 September.</b></p></li>
+
+  <li><b>The drafts table has no reader.</b>
+  <p>The queue moved into <code>estate-db.drafts</code> and is served as JSON behind a token. Nothing else reads it. The first draft any role produces will land in a store with no interface in front of it.</p></li>
+
+  <li><b>The first finding cannot close before Tuesday.</b>
+  <p>An <code>undercovered</code> finding closes only when a fresh run reports <code>actual &gt;= expected</code>. Tidy's cadence is weekly. So <code>all_clear</code> stays false for five days, and nothing can say why. The contract was meant to be "silence means healthy". Right now it is a stuck light in a locked room.</p></li>
+
+  <li><b>The README is stale in the estate's own signature way.</b>
+  <p>Five finding kinds, eight routes. Six and thirteen exist. Nothing checks it, and it is the copy a next session actually opens.</p></li>
+</ol>
+
+<!-- ============ RULES ============ -->
+<h2>Five</h2>
+<div class="h2sub">The rules, and where they came from</div>
+
+<p>You wrote these. They are here for the next reader, and because three of them are currently failing their own test.</p>
+
+<blockquote><b>"If it needs a human to remember it, it has already failed."</b><br>
+<span class="quiet">From ROSTER.md, and the sharpest test written anywhere in this estate.</span></blockquote>
+
+<p>It currently fails against <code>sync-specs.mjs</code>, which a human must run; against the registry, which a human hand-seeded; and against the README, which a human must notice is wrong.</p>
+
+<h3>The five laws</h3>
+<ul>
+  <li><b>Nothing runs unless it is in the registry, and the registry is generated.</b> Half true. Registration is enforced; generation is not built.</li>
+  <li><b>Every run reports coverage, not success.</b> Enforced in the route: a report without <code>expected</code> and <code>actual</code> is refused, and <code>no_unit: true</code> makes omission a decision.</li>
+  <li><b>Agents propose, humans dispose, and the gate is a status column.</b> Enforced. An agent cannot read <code>status</code> from a request body, and only admin may PATCH one.</li>
+  <li><b>Ground every claim, or produce nothing.</b> Prose only. Nothing enforces it.</li>
+  <li><b>Instructions are served, versioned and drift-checked, never embedded.</b> Built today, with the SHA caveat above.</li>
+</ul>
+
+<h3>The two ideas worth keeping from before</h3>
+
+<blockquote><b>"D1 holds what a machine queries. Git holds what a human writes and reads."</b><br>
+<span class="quiet">The word "log" was doing two jobs. Telemetry is machine data, queried constantly. Narrative is writing, read by people. Putting either in the other's home is what made this feel hard.</span></blockquote>
+
+<blockquote><b>Five to ten minutes is roughly 10 to 15 decisions.</b> That allows exactly one drafting role to run daily. Everything else is weekly and lands on its own day. A second daily queue breaches the budget, and a breached budget is how Clippy sat at 0 approved out of 25 for a month.
+<br><span class="quiet">The only place in the old documents where a constraint was derived from evidence rather than asserted.</span></blockquote>
+
+<h3>The cost of not watching</h3>
+<p>From the 5 September audit. The precedents are historical and cannot expire.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Failure</th><th>Time to find out</th><th>Covered now?</th></tr></thead>
+<tbody>
+<tr><td>A scraper stops</td><td class="n">~3 weeks</td><td><span class="pill p-ok">overdue</span></td></tr>
+<tr><td>A cron errors</td><td class="n">~4.5 months</td><td><span class="pill p-ok">failing</span></td></tr>
+<tr><td>A routine never fires</td><td class="n">indefinite</td><td><span class="pill p-ok">never_ran</span></td></tr>
+<tr><td>A job succeeds while covering a fraction</td><td class="n">6 weeks</td><td><span class="pill p-ok">undercovered</span></td></tr>
+<tr><td>A schedule drifts at daylight saving</td><td class="n">never</td><td><span class="pill p-ok">schedule_drift</span></td></tr>
+<tr><td>A Pages build fails</td><td class="n">never</td><td><span class="pill p-warn">not covered</span></td></tr>
+<tr><td>A domain lapses</td><td class="n">never</td><td><span class="pill p-warn">not covered</span></td></tr>
+<tr><td>The watcher itself stops</td><td class="n">never</td><td><span class="pill p-warn">not covered</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="quiet">Five of eight are covered by a finding kind. All five detect. <b>None of them can currently tell you.</b></p>
+
+<footer>
+Supersedes <code>1-estate-review.html</code>, <code>2-agent-team.html</code>, <code>3-where-things-live.html</code> and <code>4-io-map.html</code>, which are kept under <code>superseded/</code> and in git history. Verified against the estate API, D1, the GitHub API and live sites on 7 September 2026 between 17:20 and 17:35 UTC. The live registry is <code>estate-db.registry</code>; where this page and that table disagree, the table is right and this page is the bug.
+</footer>
+
+</div>
+</body>
+</html>
