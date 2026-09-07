@@ -44,17 +44,24 @@ of thing that rots.
 Three roles are blocked on this: Wordy and Designy on guides that exist but are wrong or
 stale, Salesy on one that does not exist at all.
 
-## The duplicate to resolve first
+## The X duplicate: resolved 2026-09-06
 
-`jbmangum/x` has two guides in different repos, and they disagree in emphasis:
+`jbmangum/x` used to have two guides in different repos that disagreed in emphasis.
+`site-jbmangum/crew/voice-profile.md`, orphaned from the deleted X Crew and never tracked
+in git, has been deleted. **`jbmangum-inbox/voice.md` is now the only X voice guide.**
 
-- `jbmangum-inbox/voice.md` — newer, better, and already states the parent-brand rule
-- `site-jbmangum/crew/voice-profile.md` — orphaned from the deleted X Crew, and **not
-  even tracked in git**
+Before deleting, the surviving guide was checked against it and is a superset: the
+BotBase take, the 63-view post, the 295-follower baseline, the 3,175 post count, the
+patterns section and the duct-tape line are all already in it. Only a passing mention of
+a Charlotte HVAC demo was unique, and that is not worth a second source of truth.
 
-Keep the first. Salvage `crew/competitors.md` from the second, which is the only
-competitor list anywhere in the estate. Delete the rest. This is not a Voicey run; it is
-a decision that needs Brian, and it should happen before anything drafts against either.
+`crew/competitors.md` was salvaged to `jbmangum-inbox/competitors.md`. It is the only
+competitor list in the estate and nothing else names those five accounts.
+
+Two stale pointers survive and are harmless history rather than live guidance:
+`crew/README.md` describes the retired X Crew, and `jbmangum-inbox/voice.md` carries a
+provenance line saying it was adapted from the file that is now gone. Provenance about a
+deleted source is still true.
 
 ## Opening the pull request
 
