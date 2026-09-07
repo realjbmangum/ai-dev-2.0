@@ -31,18 +31,33 @@ of thing that rots.
 | Surface | Guide path | Repo | Status |
 |---|---|---|---|
 | `jbmangum/blog` | `voice-guide.md` | `site-jbmangum` | exists |
-| `jbmangum/x` | `voice.md` | `jbmangum-inbox` | exists, and a duplicate needs killing |
+| `jbmangum/x` | `voice.md` | `jbmangum-inbox` | exists, sole copy since 6 Sep |
 | `crownandcompass/prose` | `brand/voice.md` | `site-crownandcompass` | exists |
-| `crownandcompass/visual` | `brand/design-grammar.md` | `site-crownandcompass` | exists, on-disk copy is behind origin |
+| `crownandcompass/visual` | `brand/design-grammar.md` | `site-crownandcompass` | exists, in sync since 6 Sep |
 | `crownandcompass/app-ui` | `.impeccable.md` | `app-crownandcompass` | exists, design brief rather than voice |
-| `crownandcompass/brand-standards` | `brand/brand-standards.md` | `site-crownandcompass` | **wrong**: names fonts the live site stopped using |
+| `crownandcompass/brand-standards` | `brand/brand-standards.md` | `site-crownandcompass` | rewritten 6 Sep, PR #21 |
 | `directories/patriot` | `directories/patriot/voice/tone.md` | `directory-machine` | exists |
 | `directories/recordstops` | none yet | `site-recordstore-directory` | **missing** |
 | `directories/potty` | none yet | `site-pottydirectory` | **missing** |
-| `ascend/client-facing` | none yet | `site-ai-tech-co` | **missing**, blocks Salesy |
+| `ascend/client-facing` | `brand/voice.md` | `site-ai-tech-co` | derived 6 Sep from 64 samples, PR #75 |
 
-Three roles are blocked on this: Wordy and Designy on guides that exist but are wrong or
-stale, Salesy on one that does not exist at all.
+**Wordy, Designy and Salesy are unblocked** as of 6 September. The only guides still
+missing are the two directory properties, and no role is waiting on either.
+
+Two lessons from those three runs, worth carrying into the next one:
+
+**A wrong guide beats a missing one at hiding.** Crown and Compass' brand standards
+described a dark palette the site had abandoned, and it survived six months because the
+rebuild kept the old CSS variable names as compat aliases. Every name still resolved,
+just to the opposite value, so code written from the doc looked correct and rendered
+inverted. When checking a surface, compare against what is **served**, not against what
+the repo says.
+
+**Check for a second document giving the same direction.** Ascend's brand kit described a
+different company entirely. Crown and Compass' standards carried image prompts that
+contradicted its own design grammar. In both cases the fix was to name the winner in
+writing rather than quietly update the loser, because otherwise somebody restores the
+aspiration later and it looks like a correction.
 
 ## The X duplicate: resolved 2026-09-06
 
