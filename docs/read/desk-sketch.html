@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desk Sketch</title>
+<style>
+  :root{
+    --ink:#14161b; --ink2:#464c55; --ink3:#767d87; --ink4:#a8aeb6;
+    --bg:#f7f5f2; --card:#fff; --line:#e4e0da; --line2:#d3cec6;
+    --red:#a3262b; --redbg:#fdf2f2; --redline:#eccccd;
+    --amber:#8a5a12; --amberbg:#fdf8ef; --amberline:#eddcbe;
+    --green:#1f6b45; --greenbg:#eef7f2; --greenline:#c2ded0;
+    --blue:#20527d; --bluebg:#eef4fa; --blueline:#b9d2e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1140px;margin:0 auto;padding:48px 26px 110px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:20px;margin-bottom:30px}
+  .eyebrow{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:11px}
+  h1{font-size:38px;line-height:1.1;margin:0 0 10px;letter-spacing:-.03em}
+  .sub{color:var(--ink2);font-size:17px;margin:0;max-width:640px}
+  h2{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:52px 0 5px;font-weight:700}
+  h2 + .h2sub{font-size:24px;letter-spacing:-.02em;margin:0 0 16px;font-weight:600;line-height:1.25}
+  h3{font-size:16.5px;margin:26px 0 8px}
+  p{margin:0 0 14px}
+  code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#efece7;padding:1.5px 5px;border-radius:3px;color:#3a3e46}
+
+  /* ---- the mock ---- */
+  .mock{border:1px solid var(--line2);border-radius:12px;overflow:hidden;margin:20px 0 8px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);background:#fbfaf8}
+  .chrome{background:#eceae5;padding:9px 14px;display:flex;gap:7px;align-items:center;border-bottom:1px solid var(--line2)}
+  .dot{width:11px;height:11px;border-radius:50%;background:#cfcbc4}
+  .url{margin-left:10px;font:11.5px ui-monospace,monospace;color:var(--ink3)}
+  .nav{display:flex;gap:2px;background:var(--card);padding:0 12px;border-bottom:1px solid var(--line);
+    overflow-x:auto;align-items:stretch}
+  .nav a{padding:12px 13px;font-size:13.5px;color:var(--ink3);text-decoration:none;white-space:nowrap;
+    border-bottom:2px solid transparent}
+  .nav a.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+  .nav a.new{color:var(--green);font-weight:600;border-bottom-color:var(--green)}
+  .nav a .badge{display:inline-block;background:var(--red);color:#fff;font-size:10px;font-weight:700;
+    border-radius:9px;padding:1px 6px;margin-left:5px;vertical-align:1px}
+  .screen{padding:22px 20px;background:var(--card)}
+
+  .counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:9px;margin-bottom:22px}
+  .c{border:1px solid var(--line);border-radius:8px;padding:11px 12px;background:#fbfaf8}
+  .c b{display:block;font-size:23px;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .c span{display:block;font-size:10.5px;color:var(--ink3);margin-top:4px}
+  .c.bad{background:var(--redbg);border-color:var(--redline)} .c.bad b{color:var(--red)}
+  .c.warn{background:var(--amberbg);border-color:var(--amberline)} .c.warn b{color:var(--amber)}
+  .c.ok b{color:var(--green)}
+
+  .sec{margin-bottom:26px}
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:7px;
+    border-bottom:1px solid var(--line);margin-bottom:12px}
+  .sec-h b{font-size:15px}
+  .sec-h span{font-size:11.5px;color:var(--ink3)}
+
+  .row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .body{flex:1;min-width:0}
+  .row .t{font-weight:600;font-size:14.5px;margin-bottom:3px}
+  .row .m{font-size:12.5px;color:var(--ink3);line-height:1.5}
+  .row .ev{font-size:12.5px;color:var(--ink2);border-left:2px solid var(--amberline);
+    padding:5px 10px;margin-top:7px;background:var(--amberbg);border-radius:0 5px 5px 0}
+  .acts{display:flex;gap:6px;flex-shrink:0;align-items:center}
+  .btn{font-size:12px;font-weight:600;padding:6px 11px;border-radius:6px;border:1px solid var(--line2);
+    background:var(--card);color:var(--ink2);white-space:nowrap}
+  .btn.go{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.no{background:var(--card);border-color:var(--redline);color:var(--red)}
+  .key{font:10.5px ui-monospace,monospace;color:var(--ink4);border:1px solid var(--line);
+    border-radius:3px;padding:1px 4px;margin-left:3px}
+
+  table.g{width:100%;border-collapse:collapse;font-size:13px}
+  table.g th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);
+    padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700}
+  table.g td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.g tr:last-child td{border-bottom:none}
+  table.g td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .st{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .st.g{background:var(--green)} .st.a{background:var(--amber)} .st.r{background:var(--red)} .st.o{background:var(--ink4)}
+  .dim{color:var(--ink4)}
+
+  .tog{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .tog:last-child{border-bottom:none}
+  .sw{width:38px;height:22px;border-radius:11px;background:var(--line2);position:relative;flex-shrink:0}
+  .sw.on{background:var(--green)}
+  .sw::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff}
+  .sw.on::after{left:19px}
+  .tog .lbl{font-weight:600;min-width:112px}
+  .tog .why{color:var(--ink3);font-size:12.5px}
+
+  .cap{color:var(--ink3);font-size:12.5px;text-align:center;margin:10px 0 26px}
+
+  .box{border-left:3px solid var(--line2);background:var(--card);padding:16px 19px;margin:20px 0;border-radius:0 9px 9px 0}
+  .box.red{border-left-color:var(--red);background:var(--redbg)}
+  .box.amber{border-left-color:var(--amber);background:var(--amberbg)}
+  .box.green{border-left-color:var(--green);background:var(--greenbg)}
+  .box.blue{border-left-color:var(--blue);background:var(--bluebg)}
+  .box .t{font-weight:700;margin-bottom:6px}
+  .box p:last-child{margin-bottom:0}
+
+  .scroll{overflow-x:auto;margin:14px 0 22px;border:1px solid var(--line);border-radius:9px;background:var(--card)}
+  .scroll table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}
+  .scroll th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);
+    padding:9px 11px;border-bottom:2px solid var(--line);font-weight:700;background:#fbfaf8;white-space:nowrap}
+  .scroll td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+  .scroll tr:last-child td{border-bottom:none}
+  ul{margin:0 0 14px;padding-left:20px} li{margin-bottom:6px}
+  .quiet{color:var(--ink3);font-size:13.5px}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink3);font-size:13px}
+  @media print{body{background:#fff}.wrap{padding:0}.mock,.box,.scroll{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Sketch, not built &middot; 7 September 2026</div>
+  <h1>One desk</h1>
+  <p class="sub">Four windows become one. Two new pages on the desk you already use, built from data that already exists.</p>
+</header>
+
+<p>Every number in this sketch is real and was read from a live database today. Nothing here is invented sample data, because the point is to show you what the page would say <em>this morning</em>.</p>
+
+<div class="box blue">
+  <div class="t">The one rule this sketch obeys</div>
+  <p>Your desk's own brief says <b>"success is time-to-close, so anything that increases dwell time is a bug"</b> and <b>"it is built to be emptied, not looked at."</b> A live-status dashboard is the opposite of that. So the fleet page is not a monitoring screen with activity feeds and sparklines. It is a page that is <b>mostly empty when things are fine</b>, and that only shows you something when something needs you.</p>
+</div>
+
+<!-- =============== PAGE 1 =============== -->
+<h2>Page one</h2>
+<div class="h2sub">Fleet</div>
+
+<p>What needs you, then what is wrong, then the switches. Everything else collapsed.</p>
+
+<div class="mock">
+  <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="url">app.jbmangum.com/fleet</span></div>
+  <div class="nav">
+    <a href="#">Today</a><a href="#">News</a><a href="#">Ideas</a><a href="#">Projects</a>
+    <a href="#">Week</a><a href="#">Growth</a><a href="#">Ships</a><a href="#">Scorecard</a>
+    <a href="#" class="new on">Fleet <span class="badge">18</span></a>
+  </div>
+  <div class="screen">
+
+    <div class="counts">
+      <div class="c bad"><b>17</b><span>waiting on you</span></div>
+      <div class="c bad"><b>1</b><span>problem</span></div>
+      <div class="c ok"><b>3</b><span>agents reporting</span></div>
+      <div class="c warn"><b>17</b><span>registered, silent</span></div>
+      <div class="c"><b>67</b><span>listings</span></div>
+      <div class="c"><b>313</b><span>followers</span></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Needs you</b><span>17 candidates &middot; oldest 6 days</span></div>
+
+      <div class="row">
+        <div class="body">
+          <div class="t">Barr Tools <span class="dim" style="font-weight:400;font-size:12.5px">&middot; Directories &middot; found by scouty</span></div>
+          <div class="m">Cave Junction, OR &middot; high confidence &middot; <span class="dim">barrtools.com</span></div>
+          <div class="ev">"Made in the U.S.A. Every tool hand forged." Founded by Barr Quarton 1977.</div>
+        </div>
+        <div class="acts"><span class="btn go">Approve<span class="key">a</span></span><span class="btn no">Reject<span class="key">x</span></span></div>
+      </div>
+
+      <div class="row">
+        <div class="body">
+          <div class="t">Liberty Forge <span class="dim" style="font-weight:400;font-size:12.5px">&middot; Directories &middot; found by scouty</span></div>
+          <div class="m">Nashville, TN &middot; high confidence &middot; <span class="dim">libertyforge.co</span></div>
+          <div class="ev">"Hand-forged ironwork from a two-person shop in Tennessee."</div>
+        </div>
+        <div class="acts"><span class="btn go">Approve</span><span class="btn no">Reject</span></div>
+      </div>
+
+      <div class="row">
+        <div class="body">
+          <div class="m dim">15 more, best evidence first &middot; <span style="color:var(--blue)">show all</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Wrong right now</b><span>1 open, 1h 33m</span></div>
+      <div class="row">
+        <div class="body">
+          <div class="t"><span class="st a"></span>Tidy covered 13 of 15</div>
+          <div class="m">Two business sites were unreachable. Clears itself if they are up next Tuesday.</div>
+        </div>
+        <div class="acts"><span class="btn">Run now</span><span class="btn">Mute</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Switches</b><span>changes take effect on the next run</span></div>
+      <div class="tog"><span class="sw on"></span><span class="lbl">Fleet</span>
+        <span class="why">Off means every agent stops before doing anything.</span></div>
+      <div class="tog"><span class="sw"></span><span class="lbl">Dry run</span>
+        <span class="why">On means agents do the work and write nothing, so you can read it first.</span></div>
+      <div class="tog"><span class="sw on"></span><span class="lbl">Drafts only</span>
+        <span class="why">Blocks anything that cannot be taken back. Mail, posts, money.</span></div>
+      <div class="tog"><span class="sw"></span><span class="lbl">Alert me</span>
+        <span class="why">Push when something breaks. <span style="color:var(--red)">Needs a destination first.</span></span></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>The team</b><span>3 of 20 have ever run</span></div>
+      <table class="g">
+        <thead><tr><th>Agent</th><th>For</th><th>Last run</th><th>Did</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><span class="st g"></span><b>Watchy</b></td><td>Estate</td><td class="n">2 min ago</td>
+              <td class="n">2 of 2 healthy</td><td class="dim">every 15 min</td></tr>
+          <tr><td><span class="st a"></span><b>Tidy</b></td><td>Directories</td><td class="n">1h ago</td>
+              <td class="n">13 of 15</td><td class="dim">Tuesdays</td></tr>
+          <tr><td><span class="st g"></span><b>Voicey</b></td><td>Estate</td><td class="n">14h ago</td>
+              <td class="n">64 of 8</td><td class="dim">on demand</td></tr>
+          <tr><td><span class="st o"></span><span class="dim">Scouty</span></td><td class="dim">Directories</td>
+              <td class="dim">never</td><td class="dim">&mdash;</td><td class="dim">not built</td></tr>
+          <tr><td><span class="st o"></span><span class="dim">Posty, Wordy, Salesy and 13 more</span></td>
+              <td class="dim">&mdash;</td><td class="dim">never</td><td class="dim">&mdash;</td>
+              <td class="dim">not built</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+<div class="cap">Real numbers, read from the live databases this afternoon.</div>
+
+<div class="box amber">
+  <div class="t">Notice what is missing from that page</div>
+  <p>No activity feed. No progress bars. No sparklines. No "12 agents working" hero number.</p>
+  <p>The mockup you sent has all of those, and they are lovely on a page you are <em>watching</em>. On a page you are <em>emptying</em>, every one of them is something to look at instead of doing. If the fleet page is doing its job, it is nearly blank most mornings and you close it in fifteen seconds.</p>
+</div>
+
+<!-- =============== PAGE 2 =============== -->
+<h2>Page two</h2>
+<div class="h2sub">Log</div>
+
+<p>Every act by every agent, across every entity, newest first. You will rarely open it. When something looks wrong, it is the only page that answers "what exactly did it do, and can I undo it."</p>
+
+<div class="mock">
+  <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="url">app.jbmangum.com/log</span></div>
+  <div class="nav">
+    <a href="#">Today</a><a href="#">News</a><a href="#">Ideas</a><a href="#">Projects</a>
+    <a href="#">Week</a><a href="#">Growth</a><a href="#">Ships</a><a href="#">Scorecard</a>
+    <a href="#" class="new">Fleet</a><a href="#" class="new on">Log</a>
+  </div>
+  <div class="screen">
+    <table class="g">
+      <thead><tr><th>When</th><th>Agent</th><th>Did</th><th>To what</th><th></th></tr></thead>
+      <tbody>
+        <tr><td class="n dim">17:26</td><td><b>Tidy</b></td><td><code>enrich</code></td>
+            <td>BowTied Woodwork &middot; email was blank, now <span class="dim">support@bowtiewoodworks.com</span></td>
+            <td class="acts"><span class="btn">Undo</span></td></tr>
+        <tr><td class="n dim">17:26</td><td><b>Tidy</b></td><td><code>verify</code></td>
+            <td>Fox &amp; Root &middot; read the site, no email published <span class="dim">(no change)</span></td><td></td></tr>
+        <tr><td class="n dim">17:24</td><td><b>Tidy</b></td><td><code>verify</code></td>
+            <td>3 marketplace pages refused &middot; <span class="dim">not the business's own site</span></td><td></td></tr>
+        <tr><td class="n dim">Sep 3</td><td><b>Scouty</b></td><td><code>propose</code></td>
+            <td>Barr Tools &middot; candidate #48</td><td></td></tr>
+        <tr><td class="n dim">Sep 1</td><td class="dim">You</td><td><code>approve</code></td>
+            <td class="dim">Chagrin Valley Soap &middot; published</td><td></td></tr>
+      </tbody>
+    </table>
+    <p class="quiet" style="margin-top:16px">43 acts recorded. Filter by agent, entity or date.</p>
+  </div>
+</div>
+<div class="cap">The Undo button is the point. Every reversible change already stores its before and after.</div>
+
+<!-- =============== WHAT IT COSTS =============== -->
+<h2>Three</h2>
+<div class="h2sub">What it takes to build</div>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Piece</th><th>Data exists?</th><th>Work</th></tr></thead>
+<tbody>
+<tr><td><b>The counts strip</b></td><td>Yes, all of it</td><td>Small. Two database bindings and one query each.</td></tr>
+<tr><td><b>Needs you: 17 candidates</b></td><td>Yes, with evidence and working approve/reject</td><td>Medium. The buttons exist in Directory Machine and would be ported.</td></tr>
+<tr><td><b>Wrong right now</b></td><td>Yes. Findings already open and close themselves</td><td>Small.</td></tr>
+<tr><td><b>Switches</b></td><td>Yes, and each carries its own plain-English explanation already written</td><td>Small. Needs one new write route; today they change by hand in SQL.</td></tr>
+<tr><td><b>The team table</b></td><td>Yes</td><td>Small.</td></tr>
+<tr><td><b>The log, with undo</b></td><td>Yes. 43 acts, each with before and after</td><td>Medium. Undo is a new button on an existing record.</td></tr>
+<tr><td><b>Inbox</b></td><td><b>No.</b> Table exists, zero rows, and nothing writes it</td><td>Blocked. Needs email routing turned on for patriot.directory.</td></tr>
+<tr><td><b>Connectors</b></td><td><b>No. Nothing anywhere records this.</b></td><td>New. See below.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box red">
+  <div class="t">Connectors: the one thing you asked for that has no data behind it</div>
+  <p>You asked to see connectors. I checked all four databases. <b>Nothing records which connectors an agent holds, or which tools it is allowed.</b> That lives only in Claude's own routine settings, and reading it needs a login that a background service cannot have.</p>
+  <p>It matters because it is where a real risk sits. Three of your older routines each carry eight connectors they do not need, including mail that can send and your accounting system. Tidy carries none, deliberately.</p>
+  <p>Two ways to get it on the page. Either I record each agent's connectors as I build it, which is accurate from now on and blind to the old ones, or you run a one-line command occasionally that refreshes the whole picture. I would do both: record going forward, refresh on demand.</p>
+</div>
+
+<!-- =============== HONEST =============== -->
+<h2>Four</h2>
+<div class="h2sub">Two things worth knowing before you say yes</div>
+
+<div class="box amber">
+  <div class="t">The fleet page is mostly empty because most of the fleet does not exist</div>
+  <p>Three agents have ever run. Seventeen more are registered and have never fired, because they are not built yet. The page will be honest about that, and honestly it will look thin for a while. That is the real state, not a rendering problem.</p>
+</div>
+
+<div class="box amber">
+  <div class="t">Your morning bots are invisible to all of this</div>
+  <p>Your four grok bots have produced 34 runs and fired again this morning. The estate has never heard of any of them, and the desk records them somewhere else entirely. <b>Two systems tracking the same agents and disagreeing is the exact problem we started this to end</b>, and it has quietly reappeared.</p>
+  <p>Worth fixing in the same pass, and it is small: they already write to the desk, so the desk can pass that on.</p>
+</div>
+
+<h3>What I would build, in order</h3>
+<ol>
+  <li><b>The Fleet page</b>, read-only, with the counts and the team table. Proves the wiring.</li>
+  <li><b>The 17 candidates with working buttons.</b> This is the only real queue you have, and it turns the page from a readout into a control on day one.</li>
+  <li><b>The switches</b>, so you can stop the fleet from your phone instead of from a database.</li>
+  <li><b>The log with undo.</b></li>
+  <li><b>Connectors</b>, recorded as each new agent is built and refreshed on demand.</li>
+</ol>
+
+<p>One and two together are the useful half. Three onwards can follow whenever.</p>
+
+<footer>
+Sketch only, nothing built. Every figure read from estate-db, patriot_directory_db and jbmangum-desk on 7 September 2026. The desk is React on Cloudflare behind Access, so new pages inherit the login for free and reuse the components and keyboard shortcuts already there.
+</footer>
+
+</div>
+</body>
+</html>
