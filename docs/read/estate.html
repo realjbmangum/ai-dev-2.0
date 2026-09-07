@@ -95,7 +95,7 @@
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Lighthouse 27 &middot; supersedes four documents</div>
+  <div class="eyebrow">Lighthouse 27 &middot; supersedes four documents &middot; updated 7 Sep, 22:50 UTC</div>
   <h1>The Estate</h1>
   <p class="sub">What is running, what needs you, and what is still wrong. Every number verified against a live system, not against a document.</p>
   <p class="asof"><b>As of 7 September 2026, 17:35 UTC.</b> Four control values and six run rows changed during the eight minutes it took to audit this, so every figure below carries a time. Repo HEAD <code>0aa6130</code>, working tree clean.</p>
@@ -116,13 +116,13 @@
 </div>
 
 <div class="stats">
-  <div class="stat"><b>20</b><span>registered</span></div>
-  <div class="stat ok"><b>3</b><span>active</span></div>
-  <div class="stat warn"><b>2</b><span>actually watched</span></div>
+  <div class="stat"><b>21</b><span>registered</span></div>
+  <div class="stat ok"><b>4</b><span>active</span></div>
+  <div class="stat warn"><b>3</b><span>actually watched</span></div>
   <div class="stat bad"><b>1</b><span>open finding</span></div>
   <div class="stat bad"><b>0</b><span>ways to reach you</span></div>
-  <div class="stat"><b>10</b><span>run reports, ever</span></div>
-  <div class="stat bad"><b>0</b><span>rows a human confirmed</span></div>
+  <div class="stat"><b>12</b><span>run reports, ever</span></div>
+  <div class="stat bad"><b>1</b><span>rows a human confirmed</span></div>
   <div class="stat"><b>15h</b><span>age of estate-db</span></div>
 </div>
 
@@ -220,8 +220,12 @@ rollback: set email back to null
 <table>
 <thead><tr><th>Then</th><th>Now</th></tr></thead>
 <tbody>
+<tr><td>Mail could not reach the machine at all</td><td>Email Routing live, first real message received 7 Sep and triaged by <code>directories:mailroom</code> in the same hour</td></tr>
+<tr><td>"Validated sender" compared a From header anyone can set</td><td>Cloudflare's DMARC verdict is recorded and decided server-side. Unknown is not a pass, and a validated sender may fill a blank field but never overwrite one</td></tr>
+<tr><td>No agent could read the inbox, open a ticket or stage a change</td><td>All three routes built and covered by 32 passing assertions</td></tr>
+<tr><td>A business address sat in the estate run log</td><td>Scrubbed, and Tidy's spec now reports a pointer to the work log instead. Zero addresses across all 12 rows</td></tr>
 <tr><td>Nothing above the individual project</td><td><code>estate-db</code> and <code>estate-api</code> live, cron firing every 15 min</td></tr>
-<tr><td>1 of 26 scheduled things reported coverage</td><td>Still 3 of 20 registered report, but the spine now exists to retrofit into</td></tr>
+<tr><td>1 of 26 scheduled things reported coverage</td><td>4 of 21 registered report, and the spine exists to retrofit the rest into</td></tr>
 <tr><td>patriot-tidy enabled, never produced a run</td><td>Disabled. Replaced by <code>directories:tidy</code>, which has run four times</td></tr>
 <tr><td>Wordy, Designy, Salesy blocked on voice guides</td><td>All three unblocked. Ascend guide derived, C&amp;C standards rewritten, both merged</td></tr>
 <tr><td>Two X voice guides disagreeing</td><td>One. The orphan is deleted, <code>competitors.md</code> salvaged</td></tr>

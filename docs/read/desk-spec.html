@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desk Build Spec</title>
+<style>
+  :root{
+    --ink:#14161b; --ink2:#464c55; --ink3:#767d87; --ink4:#a8aeb6;
+    --bg:#f7f5f2; --card:#fff; --line:#e4e0da; --line2:#d3cec6;
+    --red:#a3262b; --redbg:#fdf2f2; --redline:#eccccd;
+    --amber:#8a5a12; --amberbg:#fdf8ef; --amberline:#eddcbe;
+    --green:#1f6b45; --greenbg:#eef7f2; --greenline:#c2ded0;
+    --blue:#20527d; --bluebg:#eef4fa; --blueline:#b9d2e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 26px 110px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:20px;margin-bottom:26px}
+  .eyebrow{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:11px}
+  h1{font-size:38px;line-height:1.08;margin:0 0 10px;letter-spacing:-.03em}
+  .sub{color:var(--ink2);font-size:17px;margin:0;max-width:680px}
+  h2{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:54px 0 5px;font-weight:700}
+  h2 + .h2sub{font-size:25px;letter-spacing:-.02em;margin:0 0 14px;font-weight:600;line-height:1.22}
+  h3{font-size:16.5px;margin:28px 0 8px}
+  h4{font-size:14px;margin:20px 0 6px;color:var(--ink2);letter-spacing:.02em}
+  p{margin:0 0 14px}
+  code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#efece7;padding:1.5px 5px;border-radius:3px;color:#3a3e46}
+  ul,ol{margin:0 0 14px;padding-left:22px} li{margin-bottom:7px}
+
+  .box{border-left:3px solid var(--line2);background:var(--card);padding:16px 19px;margin:20px 0;border-radius:0 9px 9px 0}
+  .box.red{border-left-color:var(--red);background:var(--redbg)}
+  .box.amber{border-left-color:var(--amber);background:var(--amberbg)}
+  .box.green{border-left-color:var(--green);background:var(--greenbg)}
+  .box.blue{border-left-color:var(--blue);background:var(--bluebg)}
+  .box .t{font-weight:700;margin-bottom:6px}
+  .box p:last-child{margin-bottom:0}
+
+  .mock{border:1px solid var(--line2);border-radius:12px;overflow:hidden;margin:20px 0 8px;box-shadow:0 1px 3px rgba(0,0,0,.05);background:#fbfaf8}
+  .chrome{background:#eceae5;padding:9px 14px;display:flex;gap:7px;align-items:center;border-bottom:1px solid var(--line2)}
+  .dot{width:11px;height:11px;border-radius:50%;background:#cfcbc4}
+  .url{margin-left:10px;font:11.5px ui-monospace,monospace;color:var(--ink3)}
+  .nav{display:flex;gap:2px;background:var(--card);padding:0 12px;border-bottom:1px solid var(--line);overflow-x:auto}
+  .nav a{padding:12px 11px;font-size:13.5px;color:var(--ink3);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+  .nav a.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+  .nav a.new{color:var(--green);font-weight:600}
+  .nav a.new.on{border-bottom-color:var(--green)}
+  .nav a .badge{display:inline-block;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:9px;padding:1px 6px;margin-left:5px;vertical-align:1px}
+  .screen{padding:20px 18px;background:var(--card)}
+
+  .counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:9px;margin-bottom:20px}
+  .c{border:1px solid var(--line);border-radius:8px;padding:11px 12px;background:#fbfaf8}
+  .c b{display:block;font-size:23px;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .c span{display:block;font-size:10.5px;color:var(--ink3);margin-top:4px}
+  .c em{display:block;font-size:10px;color:var(--ink4);font-style:normal;margin-top:2px}
+  .c.bad{background:var(--redbg);border-color:var(--redline)} .c.bad b{color:var(--red)}
+  .c.warn{background:var(--amberbg);border-color:var(--amberline)} .c.warn b{color:var(--amber)}
+  .c.ok b{color:var(--green)}
+
+  .sec{margin-bottom:22px}
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:7px;border-bottom:1px solid var(--line);margin-bottom:10px}
+  .sec-h b{font-size:15px} .sec-h span{font-size:11.5px;color:var(--ink3)}
+  .row{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .body{flex:1;min-width:0}
+  .row .t{font-weight:600;font-size:14.5px;margin-bottom:3px}
+  .row .m{font-size:12.5px;color:var(--ink3);line-height:1.5}
+  .row .ev{font-size:12.5px;color:var(--ink2);border-left:2px solid var(--amberline);padding:5px 10px;margin-top:7px;background:var(--amberbg);border-radius:0 5px 5px 0}
+  .acts{display:flex;gap:6px;flex-shrink:0;align-items:center}
+  .btn{font-size:12px;font-weight:600;padding:6px 11px;border-radius:6px;border:1px solid var(--line2);background:var(--card);color:var(--ink2);white-space:nowrap}
+  .btn.go{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.no{background:var(--card);border-color:var(--redline);color:var(--red)}
+  .key{font:10.5px ui-monospace,monospace;color:var(--ink4);border:1px solid var(--line);border-radius:3px;padding:1px 4px;margin-left:3px}
+
+  table.g{width:100%;border-collapse:collapse;font-size:13px}
+  table.g th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700}
+  table.g td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.g tr:last-child td{border-bottom:none}
+  .st{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .st.g{background:var(--green)} .st.a{background:var(--amber)} .st.r{background:var(--red)} .st.o{background:var(--ink4)}
+  .dim{color:var(--ink4)}
+  .spark{font:11px ui-monospace,monospace;color:var(--ink3);letter-spacing:-1px}
+
+  .tog{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .tog:last-child{border-bottom:none}
+  .sw{width:38px;height:22px;border-radius:11px;background:var(--line2);position:relative;flex-shrink:0}
+  .sw.on{background:var(--green)}
+  .sw::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff}
+  .sw.on::after{left:19px}
+  .tog .lbl{font-weight:600;min-width:112px}
+  .tog .why{color:var(--ink3);font-size:12.5px}
+
+  .picker{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+  .picker span{font-size:12px;padding:5px 11px;border-radius:14px;border:1px solid var(--line2);color:var(--ink3);background:#fbfaf8}
+  .picker span.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+
+  .cap{color:var(--ink3);font-size:12.5px;text-align:center;margin:10px 0 24px}
+  .scroll{overflow-x:auto;margin:14px 0 22px;border:1px solid var(--line);border-radius:9px;background:var(--card)}
+  .scroll table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+  .scroll th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:9px 11px;border-bottom:2px solid var(--line);font-weight:700;background:#fbfaf8;white-space:nowrap}
+  .scroll td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+  .scroll tr:last-child td{border-bottom:none}
+  pre{background:#f3f0eb;border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;
+      font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#33373f;margin:12px 0}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink3);font-size:13px}
+  @media print{body{background:#fff}.wrap{padding:0}.mock,.box,.scroll,pre{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Build spec &middot; 7 September 2026 &middot; supersedes desk-sketch.html</div>
+  <h1>Three pages on the desk</h1>
+  <p class="sub">Estate, Inbox, Log. What each one shows, what every control does, and what has to be built
+    to serve it. Every number below was read from a live database today.</p>
+</header>
+
+<div class="box red">
+  <div class="t">Why this document exists</div>
+  <p>There was no spec. The earlier sketch was a mockup, it was written before Mailroom existed, and it is
+    now wrong in the ways that matter: it says no mail can arrive, that the inbox is empty, and that the
+    zone has no MX record. All three were true that morning and none is true now. Building from it would
+    have meant building from a picture of a system that no longer exists.</p>
+</div>
+
+<h2>The reference</h2>
+<div class="h2sub">What we are copying from AgentWork, and what we are not</div>
+
+<p>The shape is right: a row of counts across the top, a roster of workers with what each is doing, an
+  activity feed beside it, and detail below. Four things carry over directly.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>From AgentWork</th><th>Here</th></tr></thead>
+<tbody>
+<tr><td>Stat cards with a delta against the last period</td><td>Same, but the period is a day, not fifteen minutes. Nothing here moves fast enough for a 15-minute window to say anything.</td></tr>
+<tr><td>Live worker table: who, doing what, status</td><td>Same. Agent, entity, last run, what it covered, when it is next expected.</td></tr>
+<tr><td>Real-time activity feed</td><td>Same, fed from the work log. This is the strongest borrowed idea: it makes an invisible fleet legible in one glance.</td></tr>
+<tr><td>System status and capacity in the corner</td><td>Same, as the switches: fleet on, dry run, drafts only.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box amber">
+  <div class="t">Three things from that screenshot are deliberately not copied</div>
+  <p><b>"Success Rate 96.7%."</b> The estate's second law is coverage, not success, and it was written after
+    a cron returned success every Monday for six weeks while covering 3 of 16 sites. A success percentage is
+    exactly the number that hid it. What replaces it is coverage: <b>13 of 15</b>, with the gap visible.</p>
+  <p><b>Live progress bars.</b> AgentWork's agents work continuously, so 72% means something. These agents
+    wake, work, report and stop. A progress bar would be decoration animating a thing that is not happening.</p>
+  <p><b>Avg completion time.</b> Nobody is waiting on these. A run taking four minutes rather than two is not
+    information, and putting it on screen makes it look like it should be.</p>
+</div>
+
+<!-- =============== ESTATE =============== -->
+<h2>Page one</h2>
+<div class="h2sub">Estate</div>
+
+<p>The one page that answers "what needs me, and is anything broken". Mostly empty when things are fine.
+  It spans every entity, which is the entire reason the estate tier exists.</p>
+
+<div class="mock">
+  <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="url">app.jbmangum.com/estate</span></div>
+  <div class="nav">
+    <a href="#">Today</a><a href="#">News</a><a href="#">Ideas</a><a href="#">Projects</a>
+    <a href="#">Week</a><a href="#">Growth</a><a href="#">Ships</a><a href="#">Scorecard</a>
+    <a href="#" class="new on">Estate <span class="badge">18</span></a><a href="#" class="new">Inbox</a><a href="#" class="new">Log</a>
+  </div>
+  <div class="screen">
+
+    <div class="counts">
+      <div class="c bad"><b>17</b><span>need you</span><em>oldest 4 days</em></div>
+      <div class="c bad"><b>1</b><span>wrong now</span><em>5h open</em></div>
+      <div class="c ok"><b>4</b><span>agents live</span><em>of 21 registered</em></div>
+      <div class="c"><b>67</b><span>listings</span><em>18 reachable</em></div>
+      <div class="c"><b>1</b><span>mail today</span><em>1 triaged</em></div>
+      <div class="c"><b>64</b><span>acts logged</span><em>+21 today</em></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Needs you</b><span>17 candidates &middot; oldest 4 days</span></div>
+      <div class="row">
+        <div class="body">
+          <div class="t">Barr Tools <span class="dim" style="font-weight:400;font-size:12.5px">&middot; found by Scouty &middot; high confidence</span></div>
+          <div class="m">Cave Junction, OR &middot; <span class="dim">barrtools.com</span></div>
+          <div class="ev">"Made in the U.S.A. Every tool hand forged." Founded by Barr Quarton, 1977.</div>
+        </div>
+        <div class="acts"><span class="btn go">Approve<span class="key">a</span></span><span class="btn no">Reject<span class="key">x</span></span></div>
+      </div>
+      <div class="row"><div class="body"><div class="m dim">16 more, best evidence first &middot; <span style="color:var(--blue)">show all</span></div></div></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Wrong right now</b><span>1 open</span></div>
+      <div class="row">
+        <div class="body">
+          <div class="t"><span class="st a"></span>Tidy covered 13 of 15</div>
+          <div class="m">Two business websites were unreachable. Clears itself when they respond.</div>
+        </div>
+        <div class="acts"><span class="btn">Run now</span><span class="btn">Mute</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>The team</b><span>4 of 21 have ever run</span></div>
+      <table class="g">
+        <thead><tr><th>Agent</th><th>For</th><th>Last run</th><th>Covered</th><th>Next</th><th>Recent</th></tr></thead>
+        <tbody>
+          <tr><td><span class="st g"></span><b>Watchy</b></td><td>Estate</td><td>2 min ago</td><td>3 of 3 healthy</td><td>15 min</td><td class="spark">▁▂▁▂▁▂▁▂</td></tr>
+          <tr><td><span class="st g"></span><b>Mailroom</b></td><td>Patriot</td><td>today 18:36</td><td>1 of 1</td><td>tomorrow 12:10</td><td class="spark">▁▁▁▁▁▁▁█</td></tr>
+          <tr><td><span class="st a"></span><b>Tidy</b></td><td>Patriot</td><td>today 18:32</td><td>13 of 15</td><td>Tuesday 11:00</td><td class="spark">▁▁▁▁▅▅▅▅</td></tr>
+          <tr><td><span class="st g"></span><b>Voicey</b></td><td>Estate</td><td>19h ago</td><td>on demand</td><td class="dim">&mdash;</td><td class="spark">▁▁▁▁▁▁█▁</td></tr>
+          <tr><td><span class="st o"></span><span class="dim">Scouty</span></td><td class="dim">Patriot</td><td class="dim">never</td><td class="dim">&mdash;</td><td class="dim">not built</td><td></td></tr>
+          <tr><td><span class="st o"></span><span class="dim">16 more</span></td><td class="dim">&mdash;</td><td class="dim">never</td><td class="dim">&mdash;</td><td class="dim">registered only</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Switches</b><span>take effect on the next run</span></div>
+      <div class="tog"><span class="sw on"></span><span class="lbl">Fleet</span><span class="why">Off means every agent stops before doing anything.</span></div>
+      <div class="tog"><span class="sw"></span><span class="lbl">Dry run</span><span class="why">Agents do the work and write nothing, so you can read it first.</span></div>
+      <div class="tog"><span class="sw on"></span><span class="lbl">Drafts only</span><span class="why">Blocks anything that cannot be taken back.</span></div>
+      <div class="tog"><span class="sw"></span><span class="lbl">Alert me</span><span class="why">Push when something breaks. <span style="color:var(--red)">Needs a destination first.</span></span></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Lately</b><span>from the work log, newest first</span></div>
+      <table class="g">
+        <tbody>
+          <tr><td class="dim" style="width:64px">18:36</td><td><b>Mailroom</b> opened ticket #1 &mdash; unplaceable greeting, no request in it</td></tr>
+          <tr><td class="dim">18:36</td><td><b>Mailroom</b> triaged inbox #1</td></tr>
+          <tr><td class="dim">18:33</td><td><span class="dim">system</span> received mail to hello@ &middot; <span style="color:var(--green)">dmarc pass</span></td></tr>
+          <tr><td class="dim">18:32</td><td><b>Tidy</b> checked 15 listings for an email, filled none, 13 resolved</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="cap">Every number here is real as of 7 September. The sparklines are the only invented pixels.</div>
+
+<h4>What it reads</h4>
+<div class="scroll">
+<table>
+<thead><tr><th>Block</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>Needs you</td><td>Each directory's <code>GET /api/automation/candidates?status=pending</code></td></tr>
+<tr><td>Wrong right now</td><td><code>estate-db.findings WHERE closed_at IS NULL</code></td></tr>
+<tr><td>The team</td><td><code>estate-db.registry</code> joined to the latest <code>agent_runs</code> per key</td></tr>
+<tr><td>Switches</td><td><code>estate-db.estate_control</code></td></tr>
+<tr><td>Lately</td><td>Each directory's <code>GET /api/automation/work</code>, merged by time</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>What every control does</h4>
+<ul>
+  <li><b>Approve / Reject</b> on a candidate posts to the directory's candidates route and moves to the next
+    one. Keyboard <code>a</code> and <code>x</code>, because seventeen decisions with a mouse is a chore and
+    seventeen with two keys is a minute. <b>Reject asks for a reason from the closed list</b> and nothing else:
+    wrong voice, already said, not true, too thin, not now, other.</li>
+  <li><b>Run now</b> fires that agent's routine immediately. <b>Mute</b> suppresses one finding for 24 hours
+    and says so on its face, because a mute with no expiry is how an alarm dies quietly.</li>
+  <li><b>The switches write to <code>estate_control</code> and nothing else.</b> No deploy, no code change.
+    That is the whole point of that table.</li>
+</ul>
+
+<div class="box blue">
+  <div class="t">One thing the first version should get right</div>
+  <p>The open finding on this page today says <i>"Tidy reported success while covering 13 of 15."</i> That was
+    correct when it opened and it is now noise: 13 of 15 is a good run, the two gaps are websites that were
+    down. If the page ships with that sitting on it permanently, the "wrong right now" count stops meaning
+    anything within a week.</p>
+  <p>So <b>Mute has to exist in version one</b>, not version two, and it has to be a first-class control
+    rather than a nicety. A dashboard nobody can quiet is a dashboard nobody reads.</p>
+</div>
+
+<!-- =============== INBOX =============== -->
+<h2>Page two</h2>
+<div class="h2sub">Inbox</div>
+
+<p>Mail in both directions, for every directory. Inbound corrects listings for free. Outbound sells featured
+  slots and asks businesses to confirm their details.</p>
+
+<div class="mock">
+  <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="url">app.jbmangum.com/inbox</span></div>
+  <div class="nav">
+    <a href="#">Today</a><a href="#">News</a><a href="#">Ideas</a><a href="#">Projects</a>
+    <a href="#">Week</a><a href="#">Growth</a><a href="#">Ships</a><a href="#">Scorecard</a>
+    <a href="#" class="new">Estate</a><a href="#" class="new on">Inbox</a><a href="#" class="new">Log</a>
+  </div>
+  <div class="screen">
+    <div class="picker">
+      <span class="on">All directories</span><span>Patriot</span><span class="dim">RecordStops</span><span class="dim">+ 8 later</span>
+    </div>
+
+    <div class="counts">
+      <div class="c bad"><b>1</b><span>needs a reply</span><em>ticket open</em></div>
+      <div class="c ok"><b>1</b><span>handled for you</span><em>today</em></div>
+      <div class="c warn"><b>18</b><span>reachable</span><em>0 confirmed</em></div>
+      <div class="c"><b>49</b><span>no address</span><em>Tidy is working it</em></div>
+      <div class="c"><b>0</b><span>never email</span></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Needs a reply</b><span>1 open ticket</span></div>
+      <div class="row">
+        <div class="body">
+          <div class="t">Unplaceable greeting <span class="dim" style="font-weight:400;font-size:12.5px">&middot; hello@ &middot; today</span></div>
+          <div class="m">Mailroom could not classify it, so it opened a ticket rather than guessing.
+            <span class="dim">Reads as a delivery test.</span></div>
+        </div>
+        <div class="acts"><span class="btn go">Reply</span><span class="btn">Resolve</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Handled without you</b><span>each one reversible</span></div>
+      <div class="row">
+        <div class="body">
+          <div class="t"><span class="st g"></span>1 message triaged</div>
+          <div class="m">Sender did not match any listing, so nothing was changed and nothing was granted.</div>
+        </div>
+        <div class="acts"><span class="btn">See all</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Going out</b><span>drafted, waiting on you</span></div>
+      <div class="row">
+        <div class="body">
+          <div class="t dim">Is this still right? <span style="font-weight:400;font-size:12.5px">&middot; 0 recipients</span></div>
+          <div class="m">Nothing to send yet. This campaign needs a sender domain and a composer, neither built.
+            <span class="dim">It is what turns 18 scraped addresses into confirmed ones.</span></div>
+        </div>
+        <div class="acts"><span class="btn dim">Not built</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Mail switches</b><span>all ship off</span></div>
+      <div class="tog"><span class="sw"></span><span class="lbl">Send outbound</span><span class="why">Off means mail is composed and parked. Nothing leaves.</span></div>
+      <div class="tog"><span class="sw on"></span><span class="lbl">Confirmed only</span><span class="why">Only addresses a business confirmed. Protects the sending domain.</span></div>
+      <div class="tog"><span class="sw on"></span><span class="lbl">One a month</span><span class="why">No business hears from us twice in a month, whatever the reason.</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap">Counts are real: 1 message, 1 ticket, 18 with an address, 0 confirmed, 0 suppressed.</div>
+
+<h4>What it reads</h4>
+<div class="scroll">
+<table>
+<thead><tr><th>Block</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>Needs a reply</td><td><code>GET /api/automation/tickets?status=open</code></td></tr>
+<tr><td>Handled without you</td><td><code>GET /api/automation/work</code>, verbs <code>triage_inbox</code> and <code>enrich</code></td></tr>
+<tr><td>Reachable / no address</td><td><code>GET /api/automation/health</code></td></tr>
+<tr><td>Going out</td><td><code>outbox WHERE status='draft'</code> &mdash; <b>needs a route, none exists</b></td></tr>
+<tr><td>Never email</td><td><code>suppression</code> &mdash; <b>needs a route, none exists</b></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box amber">
+  <div class="t">The outbound half is honest about being unbuilt</div>
+  <p>Reply, Resolve, and the whole "going out" section have no backend. Cloudflare Email Routing receives and
+    forwards; it cannot originate mail to arbitrary recipients, and Cloudflare's sending product is
+    transactional-only by their own documentation. Outbound needs SendGrid, which already exists on this
+    account and is wired to nothing here.</p>
+  <p>Version one <b>shows those controls greyed with "not built"</b> rather than hiding them. A dashboard that
+    hides the unfinished half quietly teaches you the system does less than it does.</p>
+</div>
+
+<!-- =============== LOG =============== -->
+<h2>Page three</h2>
+<div class="h2sub">Log</div>
+
+<p>Every act by every agent across every directory. Rarely opened. When something looks wrong it is the only
+  page that says exactly what happened and offers to undo it.</p>
+
+<div class="mock">
+  <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="url">app.jbmangum.com/log</span></div>
+  <div class="nav">
+    <a href="#">Today</a><a href="#">News</a><a href="#">Ideas</a><a href="#">Projects</a>
+    <a href="#">Week</a><a href="#">Growth</a><a href="#">Ships</a><a href="#">Scorecard</a>
+    <a href="#" class="new">Estate</a><a href="#" class="new">Inbox</a><a href="#" class="new on">Log</a>
+  </div>
+  <div class="screen">
+    <div class="picker"><span class="on">All</span><span>Mailroom</span><span>Tidy</span><span>Scouty</span><span>You</span></div>
+    <table class="g">
+      <thead><tr><th>When</th><th>Who</th><th>Did</th><th>To what</th><th></th></tr></thead>
+      <tbody>
+        <tr><td class="dim">18:36</td><td><b>Mailroom</b></td><td><code>open_ticket</code></td>
+            <td>other &middot; unplaceable greeting, no request</td><td></td></tr>
+        <tr><td class="dim">18:36</td><td><b>Mailroom</b></td><td><code>triage_inbox</code></td>
+            <td>inbox #1 &middot; <span class="dim">new &rarr; triaged</span></td><td class="acts"><span class="btn">Undo</span></td></tr>
+        <tr><td class="dim">18:33</td><td class="dim">system</td><td><code>receive_email</code></td>
+            <td>hello@ &middot; <span style="color:var(--green)">dmarc pass</span></td><td></td></tr>
+        <tr><td class="dim">18:32</td><td><b>Tidy</b></td><td><code>verify_listing</code></td>
+            <td>Galloway Woodworks &middot; <span class="dim">no site on file, no change</span></td><td></td></tr>
+        <tr><td class="dim">17:24</td><td><b>Tidy</b></td><td><code>enrich</code></td>
+            <td>BowTied Woodwork &middot; email was blank, now set</td><td class="acts"><span class="btn">Undo</span></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;font-size:13px;color:var(--ink3)">64 acts recorded. Filter by agent, directory or date.</p>
+  </div>
+</div>
+<div class="cap">Real rows from the work log. Undo appears only where a before value was recorded.</div>
+
+<h4>Undo is the point</h4>
+<p>Every reversible change already stores its before and after, written by the endpoint rather than by the
+  agent, so it cannot be forgotten. <b>Undo posts the <code>before_json</code> back through the same enrichment
+  route with <code>overwrite: true</code>, and logs the reversal as its own act.</b> It never deletes the
+  original row. The history of a mistake is not itself a mistake.</p>
+
+<p>A row gets an Undo button only when <code>before_json</code> is present. Everything else &mdash; a check
+  that changed nothing, a ticket opened, mail received &mdash; shows none, because there is nothing to put back.</p>
+
+<!-- =============== PLUMBING =============== -->
+<h2>Four</h2>
+<div class="h2sub">What has to be built to serve it</div>
+
+<h4>How the desk reaches a directory, and why not directly</h4>
+<p>The desk Worker binds <code>jbmangum-desk</code> and will now also bind <code>estate-db</code>. It does
+  <b>not</b> bind any directory's database, and should not.</p>
+<ul>
+  <li><b>One writer per store.</b> Directory Machine's own rule. A second system writing that database is how
+    two systems end up disagreeing about the same row.</li>
+  <li><b>It does not scale.</b> Ten directories would mean ten bindings on a page that is supposed to work by
+    adding a row to a picker.</li>
+</ul>
+<p>So the desk Worker calls each directory's automation API over HTTPS with a bearer token held as a
+  Cloudflare secret, and proxies it. <b>The token never reaches the browser.</b> That API already exists, is
+  already rate limited, and is the thing it was built for.</p>
+
+<pre>browser  ->  desk Worker  ->  estate-db          (agents, runs, findings, switches)
+                         ->  patriot API        (candidates, mail, tickets, work log)
+                         ->  recordstops API    (later, same shape)</pre>
+
+<div class="box red">
+  <div class="t">The boundary that must not move</div>
+  <p>The desk never binds <code>ascend-db</code>, and neither database it does bind may hold a client name, an
+    email address or a dollar amount. Ascend's work reaches this desk as a pointer &mdash; <i>"3 leads quiet
+    9+ days, open the CRM"</i> &mdash; never as a payload.</p>
+  <p>This already had to be enforced once today. A run report had copied a business's contact address into the
+    estate database; it was scrubbed and the upstream spec corrected. <b>The Inbox page displays real
+    addresses, and it must read them live from the directory rather than caching them anywhere.</b></p>
+</div>
+
+<h4>Routes that exist</h4>
+<p>Everything the Estate page and the Log page need is already live: <code>candidates</code>,
+  <code>work</code>, <code>health</code>, <code>businesses</code>, plus the estate's <code>registry</code>,
+  <code>runs</code>, <code>findings</code> and <code>state</code>.</p>
+
+<h4>Routes that do not exist yet</h4>
+<div class="scroll">
+<table>
+<thead><tr><th>Needed for</th><th>Route</th><th>Size</th></tr></thead>
+<tbody>
+<tr><td>Switches actually switching</td><td><code>POST estate /api/control</code> &mdash; admin only</td><td>Small</td></tr>
+<tr><td>Mute a finding</td><td><code>POST estate /api/findings/:id/mute</code> with an expiry</td><td>Small</td></tr>
+<tr><td>Run now</td><td>Desk calls the routine API. <b>Needs the OAuth session a Worker does not have</b> &mdash; see below</td><td>Open question</td></tr>
+<tr><td>Undo</td><td><code>POST /api/levers/revert/:work_id</code> on the directory</td><td>Medium</td></tr>
+<tr><td>Resolve a ticket</td><td><code>PATCH /api/automation/tickets/:id</code> &mdash; a lever, human only</td><td>Small</td></tr>
+<tr><td>Outbound anything</td><td>Composer, sender, suppression writes, bounce webhook</td><td>Large, separate</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box amber">
+  <div class="t">"Run now" may not be buildable as drawn</div>
+  <p>Firing a routine on demand needs the claude.ai routine API, which authenticates with an interactive
+    OAuth session. A Cloudflare Worker has no such session. This is the same constraint that made the watcher
+    a Worker cron rather than a routine in the first place.</p>
+  <p>So the button is either dropped from version one, or it becomes a link that opens the routine on
+    claude.ai. <b>Recommend the link.</b> An honest link beats a button that fails, and it costs nothing.</p>
+</div>
+
+<!-- =============== ORDER =============== -->
+<h2>Five</h2>
+<div class="h2sub">Build order</div>
+
+<ol>
+  <li><b>Estate, read only.</b> Counts, the team table, findings, the activity feed. Every source already
+    exists, so this is the fastest path to seeing the whole fleet at once.</li>
+  <li><b>The 17 candidates, with keys.</b> Turns a readout into a control on day one, and clears a queue that
+    has been waiting four days behind a screen that did not exist.</li>
+  <li><b>Switches, and Mute.</b> Both write. Mute ships with version one for the reason given above.</li>
+  <li><b>Log, read only, then Undo.</b> Reading is easy; Undo needs the revert lever built first.</li>
+  <li><b>Inbox, read only.</b> Inbound is real today. Outbound shows as "not built" until it is.</li>
+</ol>
+
+<p>Steps 1 to 3 are the ones worth doing in one sitting. They are the difference between a fleet you are told
+  about and a fleet you can see and stop.</p>
+
+<footer>
+Supersedes <code>desk-sketch.html</code>, which was written before Mailroom existed and describes an inbox that
+cannot receive mail. Figures from <code>estate-db</code> and <code>patriot_directory_db</code>, read
+7 September 2026. The desk is React on Cloudflare behind your login, so these pages inherit its shell,
+its styling and its auth for free.
+</footer>
+
+</div>
+</body>
+</html>
