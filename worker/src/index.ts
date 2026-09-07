@@ -18,6 +18,7 @@ import { readControl } from "./lib/control";
 import registryRoutes from "./routes/registry";
 import runRoutes from "./routes/runs";
 import draftRoutes from "./routes/drafts";
+import specRoutes from "./routes/spec";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Vars }>();
 
@@ -49,6 +50,7 @@ const adminOnly = async (c: any, next: any) => {
 app.route("/api/registry", registryRoutes);
 app.route("/api/runs", runRoutes);
 app.route("/api/drafts", draftRoutes);
+app.route("/api/spec", specRoutes);
 
 /**
  * What an agent reads at the top of its run: the switches it must obey, and how much of
