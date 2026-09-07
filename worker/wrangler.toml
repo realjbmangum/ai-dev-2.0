@@ -17,7 +17,7 @@ crons = ["*/15 * * * *"]
 binding = "DB"
 database_name = "estate-db"
 # database_id is filled in after `wrangler d1 create estate-db`.
-database_id = "REPLACE_ME"
+database_id = "f2d4f8e9-cfd7-4c13-b174-1e6f97332247"
 
 # Secrets, set with `wrangler secret put`. Names only here, never values:
 # private is still not a place for secrets, because repos get opened.
