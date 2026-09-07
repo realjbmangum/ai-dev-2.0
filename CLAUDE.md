@@ -107,6 +107,27 @@ failed.**
 10. **Naming: a short functional name ending in -y.** It is the display name, the
     `registry.role` value and the basename of the role's doc. Those three always match.
 
+11. **One token per agent, and only its hash is stored.** An agent may report runs only
+    under its own key: the token *is* the identity. Assume every agent token is already
+    public, because it sits in a routine prompt and is echoed into that run's transcript.
+    Admin (`ESTATE_TOKEN`) is a Cloudflare secret, never in a prompt, and is the only
+    thing that may register, approve, reject or drive the watcher.
+
+12. **A rejection needs a reason from the closed list.** `wrong_voice`, `already_said`,
+    `not_true`, `too_thin`, `not_now`, `other`. One tap, so it survives a five-minute
+    morning, and countable, so "six of your last ten were wrong_voice" is possible.
+    Enforced in the route and again by a schema trigger.
+
+13. **Words end at a human. Reversible data edits may auto-apply.** Content is red
+    permanently, with no graduation path defined. An empty field filled from a checkable
+    source, with before and after logged, is yellow after `min_age_hours`. The line is
+    recoverability, not importance.
+
+**A deliberate omission, so nobody "fixes" it:** there is no queue-depth backpressure.
+It was considered and deferred until there is a month of real data, because a threshold
+invented before the evidence is a number chosen to feel safe. See
+`docs/decisions/no-backpressure-yet.md` for what would trigger revisiting.
+
 ## Vocabulary
 
 Inherited whole from directory-machine, which got it right.

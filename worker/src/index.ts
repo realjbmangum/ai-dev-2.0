@@ -11,14 +11,15 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings } from "./types";
+import type { Bindings, Vars } from "./types";
 import { guard } from "./lib/auth";
 import { runWatchy } from "./lib/watchy";
 import { readControl } from "./lib/control";
 import registryRoutes from "./routes/registry";
 import runRoutes from "./routes/runs";
+import draftRoutes from "./routes/drafts";
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings; Variables: Vars }>();
 
 /**
  * Liveness only, and deliberately unauthenticated: it says nothing about the estate.
@@ -28,15 +29,26 @@ app.get("/health", (c) =>
   c.json({ status: "ok", service: "estate-api", at: new Date().toISOString() })
 );
 
-// Everything under /api is rate limited, then authenticated, in that order.
+// Everything under /api is rate limited, then authenticated, in that order. The
+// resolved identity rides on the context so a route never re-derives who is calling.
 app.use("/api/*", async (c, next) => {
   const g = await guard(c.req.raw, c.env);
   if (!g.ok) return g.response;
+  c.set("identity", g.identity);
   await next();
 });
 
+/** Routes only Brian, the desk, or a cockpit session may reach. */
+const adminOnly = async (c: any, next: any) => {
+  if (!c.get("identity")?.admin) {
+    return c.json({ error: "this route needs the estate token, not an agent token" }, 403);
+  }
+  await next();
+};
+
 app.route("/api/registry", registryRoutes);
 app.route("/api/runs", runRoutes);
+app.route("/api/drafts", draftRoutes);
 
 /**
  * What an agent reads at the top of its run: the switches it must obey, and how much of
@@ -65,7 +77,7 @@ app.get("/api/state", async (c) => {
 });
 
 /** Run Watchy on demand, for the acceptance test and for a cockpit session. */
-app.post("/api/watchy/run", async (c) => {
+app.post("/api/watchy/run", adminOnly, async (c) => {
   const result = await runWatchy(c.env);
   return c.json(result);
 });
@@ -76,6 +88,35 @@ export default {
   fetch: app.fetch,
 
   async scheduled(_event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
+    /*
+     * Housekeeping, on a fixed cadence rather than in the request path.
+     *
+     * The rate-limit prune used to be inline, gated on "one request in fifty". That only
+     * fires above 50 requests a minute, so a quiet fleet never reached it and the table
+     * grew forever. agent_runs needs the same treatment for the same reason: the read
+     * window is 30 days, so rows older than that are dead weight nothing ever looks at.
+     */
+    ctx.waitUntil(
+      (async () => {
+        try {
+          const minute = Math.floor(Date.now() / 60000);
+          await env.DB.prepare(`DELETE FROM rate_limit WHERE window_start < ?`)
+            .bind(minute - 5)
+            .run();
+          await env.DB.prepare(
+            `DELETE FROM agent_runs WHERE started_at < datetime('now', '-45 days')`
+          ).run();
+          // A finding closed long ago has served its purpose; the run log carries the history.
+          await env.DB.prepare(
+            `DELETE FROM findings WHERE closed_at IS NOT NULL AND closed_at < datetime('now', '-90 days')`
+          ).run();
+        } catch (err) {
+          // Housekeeping must never be the reason a watch cycle fails.
+          console.error("housekeeping failed", err);
+        }
+      })()
+    );
+
     ctx.waitUntil(
       runWatchy(env).catch((err) => {
         // Watchy failing silently would be the same class of bug it exists to catch, so

@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import type { Bindings } from "../types";
+import type { Bindings, Vars } from "../types";
 import { readJsonBody } from "../lib/auth";
 import { recordRun } from "../lib/runs";
 
-const runs = new Hono<{ Bindings: Bindings }>();
+const runs = new Hono<{ Bindings: Bindings; Variables: Vars }>();
 
 type PostBody = {
   registry_key?: string;
@@ -45,6 +45,25 @@ runs.post("/", async (c) => {
     return c.json({ error: "ok must be true or false" }, 400);
   }
 
+  /*
+   * An agent may only ever report as itself. Its token IS its identity, so this is not
+   * a policy an agent could talk its way past: a mismatched key is refused before
+   * anything is written.
+   *
+   * This is the whole reason per-agent tokens exist. Under one shared token, any agent
+   * could report a run for any other agent, which made attribution in agent_runs a
+   * convention rather than a fact, while the watcher's entire picture rested on it.
+   * Admin (the desk, a cockpit session) may still write any key, because backfilling
+   * and correcting is a human job.
+   */
+  const identity = c.get("identity");
+  if (!identity.admin && identity.key !== key) {
+    return c.json(
+      { error: `this token may only report runs for "${identity.key}"` },
+      403
+    );
+  }
+
   const hasCoverage =
     typeof body.expected === "number" && typeof body.actual === "number";
 
@@ -62,13 +81,39 @@ runs.post("/", async (c) => {
     return c.json({ error: "expected and actual must not be negative" }, 400);
   }
 
+  /*
+   * started_at is clamped, not trusted.
+   *
+   * Watchy picks each key's current run with MAX(started_at) over a TEXT column, so
+   * SQLite orders it lexically. One report with started_at "9999-01-01T00:00:00Z" would
+   * win that comparison forever, and every real failure afterwards would sort beneath a
+   * row that says ok. A single request would permanently blind the watcher to that
+   * agent, which defeats the entire point of the system.
+   *
+   * Agents are semi-trusted: they are models following instructions that web content
+   * could have poisoned. So the value is accepted only when it is a real instant inside
+   * a sane window, and otherwise silently replaced with server time. Rejecting outright
+   * would let a confused agent lose its report; clamping keeps the report and discards
+   * only the lie.
+   */
+  const nowMs = Date.now();
+  let startedAt = new Date(nowMs).toISOString();
+  if (typeof body.started_at === "string") {
+    const t = Date.parse(body.started_at);
+    if (!Number.isNaN(t) && t <= nowMs + 5 * 60_000 && t >= nowMs - 24 * 60 * 60_000) {
+      startedAt = new Date(t).toISOString();
+    }
+  }
+
   await recordRun(c.env, {
     registryKey: key,
-    startedAt: body.started_at ?? new Date().toISOString(),
+    startedAt,
     ok: body.ok,
     expected: hasCoverage ? body.expected! : null,
     actual: hasCoverage ? body.actual! : null,
-    summary: body.summary ?? null,
+    // Bounded like detail. "One human-readable line" does not need more, and an
+    // unbounded TEXT column reachable by an authenticated loop is a way to fill D1.
+    summary: typeof body.summary === "string" ? body.summary.slice(0, 500) : null,
     detail: body.detail,
   });
 
@@ -81,7 +126,11 @@ runs.post("/", async (c) => {
  * the important one: a run that reported success while covering less than it should.
  */
 runs.get("/", async (c) => {
-  const key = c.req.query("registry_key");
+  const identity = c.get("identity");
+  // An agent sees only its own history. Scoping by identity rather than by a query param
+  // means the filter cannot be widened by omitting it, which is how this route
+  // previously returned every other agent's summaries and detail blobs to any token.
+  const key = identity.admin ? c.req.query("registry_key") : identity.key;
   const unhealthy = c.req.query("unhealthy") !== "false";
   const limit = Math.min(Math.max(Number(c.req.query("limit") ?? 50) || 50, 1), 200);
 

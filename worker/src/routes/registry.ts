@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import type { Bindings } from "../types";
+import type { Bindings, Vars } from "../types";
 import { readJsonBody } from "../lib/auth";
 
-const registry = new Hono<{ Bindings: Bindings }>();
+const registry = new Hono<{ Bindings: Bindings; Variables: Vars }>();
 
 const ROOMS = new Set(["field", "cockpit", "worker", "action"]);
 const SOURCES = new Set(["routine", "local_task", "worker_cron", "github_action"]);
@@ -23,8 +23,17 @@ type UpsertBody = {
   notes?: string | null;
 };
 
-/** What is supposed to exist, and whether it is currently keeping its promise. */
+/**
+ * What is supposed to exist, and whether it is currently keeping its promise.
+ *
+ * Admin only. The full listing enumerates every scheduled thing in the estate with its
+ * trigger ids and worker names, which is an inventory an individual agent has no use
+ * for and an attacker holding one leaked token would.
+ */
 registry.get("/", async (c) => {
+  if (!c.get("identity").admin) {
+    return c.json({ error: "the registry listing needs the estate token" }, 403);
+  }
   const entity = c.req.query("entity");
   const where = entity ? "WHERE entity = ?" : "";
   const binds = entity ? [entity] : [];
@@ -54,6 +63,12 @@ registry.get("/", async (c) => {
  * could be told anything.
  */
 registry.post("/", async (c) => {
+  // Registering things is a human act. An agent that could edit the registry could
+  // register itself, or quietly widen its own cadence so it stops looking overdue.
+  if (!c.get("identity").admin) {
+    return c.json({ error: "registering needs the estate token, not an agent token" }, 403);
+  }
+
   let body: UpsertBody;
   try {
     body = await readJsonBody<UpsertBody>(c.req.raw);
@@ -134,18 +149,28 @@ registry.post("/", async (c) => {
   return c.json({ ok: true, key });
 });
 
-/** Open findings, newest first. The answer to "what is wrong right now". */
+/**
+ * Open findings, newest first. The answer to "what is wrong right now".
+ *
+ * Admin sees the fleet. An agent sees only findings against itself, because the full
+ * list is a map of exactly which parts of the estate are currently broken and how long
+ * they have been broken, which is reconnaissance rather than something an agent needs.
+ */
 registry.get("/findings", async (c) => {
+  const identity = c.get("identity");
   const includeClosed = c.req.query("closed") === "true";
   const rows = await c.env.DB.prepare(
     `SELECT f.id, f.registry_key, f.kind, f.detail, f.opened_at, f.last_seen_at,
             f.closed_at, f.notified_at, r.entity, r.role, r.source, r.schedule
        FROM findings f
        LEFT JOIN registry r ON r.key = f.registry_key
-      ${includeClosed ? "" : "WHERE f.closed_at IS NULL"}
+      ${includeClosed ? "WHERE 1=1" : "WHERE f.closed_at IS NULL"}
+      ${identity.admin ? "" : "AND f.registry_key = ?"}
       ORDER BY f.opened_at DESC
       LIMIT 200`
-  ).all();
+  )
+    .bind(...(identity.admin ? [] : [identity.key]))
+    .all();
 
   return c.json({ findings: rows.results ?? [] });
 });

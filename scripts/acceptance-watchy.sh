@@ -178,5 +178,116 @@ CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/registry" \
 [ "$CODE" = "400" ] || { echo "FAIL: registering an unwatchable active row returned $CODE, expected 400"; exit 1; }
 echo "  PASS  an active row with no cadence is refused"
 
+echo "== per-agent identity =="
+# Two agents, each with its own token. Only the hash is ever stored, so the estate never
+# holds a value that could impersonate its own agents.
+AGENT_A="agent-a-token-for-local-testing-000000000000"
+AGENT_B="agent-b-token-for-local-testing-000000000000"
+HASH_A=$(printf '%s' "$AGENT_A" | shasum -a 256 | cut -d' ' -f1)
+HASH_B=$(printf '%s' "$AGENT_B" | shasum -a 256 | cut -d' ' -f1)
+
+d1 "UPDATE registry SET token_sha256='${HASH_A}', token_set_at=datetime('now') WHERE key='test:healthy';"
+d1 "UPDATE registry SET token_sha256='${HASH_B}', token_set_at=datetime('now') WHERE key='test:ontime';"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/runs" \
+  -H "Authorization: Bearer ${AGENT_A}" -H 'Content-Type: application/json' \
+  -d '{"registry_key":"test:healthy","ok":true,"expected":2,"actual":2}')
+[ "$CODE" = "200" ] || { echo "FAIL: agent reporting its own key returned $CODE"; exit 1; }
+echo "  PASS  an agent may report its own key"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/runs" \
+  -H "Authorization: Bearer ${AGENT_A}" -H 'Content-Type: application/json' \
+  -d '{"registry_key":"test:ontime","ok":true,"expected":2,"actual":2}')
+[ "$CODE" = "403" ] || { echo "FAIL: agent reporting ANOTHER key returned $CODE, expected 403"; exit 1; }
+echo "  PASS  an agent cannot report as another agent"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/registry" \
+  -H "Authorization: Bearer ${AGENT_A}" -H 'Content-Type: application/json' \
+  -d '{"key":"test:sneaky","entity":"test","role":"sneaky","source":"routine","status":"planned"}')
+[ "$CODE" = "403" ] || { echo "FAIL: agent editing the registry returned $CODE, expected 403"; exit 1; }
+echo "  PASS  an agent cannot register anything, including itself"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/watchy/run" \
+  -H "Authorization: Bearer ${AGENT_A}")
+[ "$CODE" = "403" ] || { echo "FAIL: agent running the watcher returned $CODE, expected 403"; exit 1; }
+echo "  PASS  an agent cannot drive the watcher"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' "${BASE}/api/state" -H "Authorization: Bearer wrong-token-entirely-0000000000000000")
+[ "$CODE" = "401" ] || { echo "FAIL: unknown token returned $CODE, expected 401"; exit 1; }
+echo "  PASS  an unknown token is rejected"
+
+for ST in paused retired planned; do
+  d1 "UPDATE registry SET status='${ST}' WHERE key='test:ontime';"
+  CODE=$(curl -s -o /dev/null -w '%{http_code}' "${BASE}/api/state" -H "Authorization: Bearer ${AGENT_B}")
+  [ "$CODE" = "401" ] || { echo "FAIL: '${ST}' agent's token returned $CODE, expected 401"; exit 1; }
+  echo "  PASS  status '${ST}' revokes the token, with the same 401 as an unknown one"
+done
+d1 "UPDATE registry SET status='active' WHERE key='test:ontime';"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' "${BASE}/api/state" -H "Authorization: Bearer short")
+[ "$CODE" = "401" ] || { echo "FAIL: a short token returned $CODE, expected 401"; exit 1; }
+echo "  PASS  a token under 32 chars is refused before it costs a database read"
+
+echo "== the watcher cannot be blinded by a forged timestamp =="
+# One report with a year-9999 timestamp would win MAX(started_at) forever, so every real
+# failure afterwards would sort beneath a row that says ok.
+curl -fsS -X POST "${BASE}/api/runs" -H "Authorization: Bearer ${AGENT_A}" \
+  -H 'Content-Type: application/json' \
+  -d '{"registry_key":"test:healthy","ok":true,"expected":1,"actual":1,"started_at":"9999-01-01T00:00:00Z"}' >/dev/null
+STORED=$(npx wrangler d1 execute estate-db --local --json \
+  --command "SELECT MAX(started_at) AS m FROM agent_runs WHERE registry_key='test:healthy';" 2>/dev/null \
+  | python3 -c "import json,sys;raw=sys.stdin.read();print(json.loads(raw[raw.index('['):])[0]['results'][0]['m'])")
+case "$STORED" in
+  9999*) echo "  FAIL  a forged future timestamp was stored: $STORED"; exit 1 ;;
+  *) echo "  PASS  a forged future timestamp was clamped to server time ($STORED)" ;;
+esac
+
+echo "== an agent cannot read the estate =="
+LIST=$(curl -fsS "${BASE}/api/drafts?status=needs_review" -H "Authorization: Bearer ${AGENT_B}")
+echo "$LIST" | grep -q '"drafts":\[\]' || { echo "FAIL: agent B can read another agent's drafts"; echo "$LIST"; exit 1; }
+echo "  PASS  an agent's draft list shows only its own"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' "${BASE}/api/registry" -H "Authorization: Bearer ${AGENT_A}")
+[ "$CODE" = "403" ] || { echo "FAIL: agent listing the registry returned $CODE, expected 403"; exit 1; }
+echo "  PASS  an agent cannot enumerate the registry"
+
+RUNS=$(curl -fsS "${BASE}/api/runs?unhealthy=false" -H "Authorization: Bearer ${AGENT_B}")
+echo "$RUNS" | grep -q 'test:healthy' && { echo "FAIL: agent B can read agent A's runs"; exit 1; }
+echo "  PASS  an agent's run history shows only its own"
+
+echo "== drafts and the rejection loop =="
+DRAFT=$(curl -fsS -X POST "${BASE}/api/drafts" -H "Authorization: Bearer ${AGENT_A}" \
+  -H 'Content-Type: application/json' \
+  -d '{"entity":"test","kind":"x_post","title":"a draft","body":"some body text"}')
+echo "$DRAFT" | grep -q '"status":"needs_review"' || { echo "FAIL: draft did not land at needs_review"; echo "$DRAFT"; exit 1; }
+DRAFT_ID=$(echo "$DRAFT" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+echo "  PASS  an agent's draft lands at needs_review, id ${DRAFT_ID}"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X PATCH "${BASE}/api/drafts/${DRAFT_ID}" \
+  -H "Authorization: Bearer ${AGENT_A}" -H 'Content-Type: application/json' \
+  -d '{"status":"approved"}')
+[ "$CODE" = "403" ] || { echo "FAIL: agent approving its own draft returned $CODE, expected 403"; exit 1; }
+echo "  PASS  an agent cannot approve its own draft"
+
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X PATCH "${BASE}/api/drafts/${DRAFT_ID}" \
+  -H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json' \
+  -d '{"status":"rejected"}')
+[ "$CODE" = "400" ] || { echo "FAIL: rejection with no reason returned $CODE, expected 400"; exit 1; }
+echo "  PASS  a rejection with no reason is refused"
+
+curl -fsS -X PATCH "${BASE}/api/drafts/${DRAFT_ID}" \
+  -H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json' \
+  -d '{"status":"rejected","rejection_reason":"wrong_voice","rejection_note":"reads like a consultant"}' >/dev/null
+echo "  PASS  a rejection with a reason is accepted"
+
+REJ=$(curl -fsS "${BASE}/api/drafts/rejections" -H "Authorization: Bearer ${AGENT_A}")
+echo "$REJ" | grep -q '"rejection_reason":"wrong_voice"' || { echo "FAIL: agent cannot read its own rejection"; echo "$REJ"; exit 1; }
+echo "$REJ" | grep -q '"n":1' || { echo "FAIL: rejection counts missing"; echo "$REJ"; exit 1; }
+echo "  PASS  the agent reads its own rejection, with counts"
+
+REJ_B=$(curl -fsS "${BASE}/api/drafts/rejections" -H "Authorization: Bearer ${AGENT_B}")
+echo "$REJ_B" | grep -q '"rejections":\[\]' || { echo "FAIL: agent B can see agent A's rejections"; echo "$REJ_B"; exit 1; }
+echo "  PASS  an agent sees only its own rejections"
+
 echo
 echo "ALL ACCEPTANCE CHECKS PASSED"
