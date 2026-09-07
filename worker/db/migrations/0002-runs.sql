@@ -64,13 +64,15 @@ CREATE TABLE IF NOT EXISTS findings (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
   registry_key TEXT NOT NULL,
 
-  -- 'overdue'      = has not reported inside its expected window
-  -- 'never_ran'    = active, registered, and has never reported at all
-  -- 'undercovered' = reported ok, but actual < expected
-  -- 'failing'      = reported ok = 0
-  -- 'unregistered' = something reported under a key with no registry row
+  -- 'overdue'         = has not reported inside its expected window
+  -- 'never_ran'       = active, registered, and has never reported at all
+  -- 'undercovered'    = reported ok, but actual < expected
+  -- 'failing'         = reported ok = 0
+  -- 'unregistered'    = something reported under a key with no registry row
+  -- 'schedule_drift'  = the configured UTC cron no longer means the intended local time
   kind         TEXT NOT NULL
-               CHECK (kind IN ('overdue','never_ran','undercovered','failing','unregistered')),
+               CHECK (kind IN ('overdue','never_ran','undercovered','failing',
+                               'unregistered','schedule_drift')),
 
   detail       TEXT,
   opened_at    TEXT NOT NULL DEFAULT (datetime('now')),

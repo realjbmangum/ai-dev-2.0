@@ -22,6 +22,12 @@ export type RegistryRow = {
   last_run_at: string | null;
   confirmed_at: string | null;
   notes: string | null;
+  /** The intent: wall-clock time this is meant to run, in `timezone`. */
+  local_time: string | null;
+  /** IANA zone name, e.g. 'America/New_York'. */
+  timezone: string | null;
+  /** The cron expression actually configured, always in UTC. */
+  cron_utc: string | null;
 };
 
 export type FindingKind =
@@ -29,4 +35,5 @@ export type FindingKind =
   | "never_ran"
   | "undercovered"
   | "failing"
-  | "unregistered";
+  | "unregistered"
+  | "schedule_drift";

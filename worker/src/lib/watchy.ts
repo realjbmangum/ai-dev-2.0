@@ -22,6 +22,7 @@
 import type { Bindings, FindingKind, RegistryRow } from "../types";
 import { readControl, isOn, num } from "./control";
 import { recordRun } from "./runs";
+import { checkScheduleDrift } from "./schedule";
 
 const WATCHY_KEY = "estate:watchy";
 
@@ -55,7 +56,7 @@ export async function runWatchy(env: Bindings): Promise<WatchResult> {
   const rows = await env.DB.prepare(
     `SELECT key, entity, role, property, room, source, schedule, trigger_id, worker_name,
             expected_every_minutes, status, first_run_at, last_run_at, confirmed_at, notes,
-            created_at
+            local_time, timezone, cron_utc, created_at
        FROM registry
       WHERE status = 'active' AND expected_every_minutes IS NOT NULL`
   ).all<RegistryRow & { created_at: string }>();
@@ -84,6 +85,18 @@ export async function runWatchy(env: Bindings): Promise<WatchResult> {
         healthy++;
         await closeFindings(env, row.key, ["overdue", "never_ran"]);
       }
+
+      // Daylight saving guard. Checked every cycle rather than once a year, because the
+      // whole point is that nobody has to remember November exists.
+      const drift = checkScheduleDrift(row.local_time, row.timezone, row.cron_utc, new Date());
+      if (drift) {
+        if (await openFinding(env, row.key, "schedule_drift", drift.detail)) {
+          opened.push({ key: row.key, kind: "schedule_drift", detail: drift.detail });
+        }
+      } else {
+        await closeFindings(env, row.key, ["schedule_drift"]);
+      }
+
       examined++;
     } catch (err) {
       // One row failing to evaluate must not abort the sweep. The gap between expected

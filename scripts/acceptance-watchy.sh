@@ -60,6 +60,21 @@ d1 "INSERT INTO agent_runs (registry_key, started_at, ok, expected, actual, summ
 d1 "INSERT INTO agent_runs (registry_key, started_at, ok, expected, actual, summary)
     VALUES ('test:healthy', datetime('now','-10 minutes'), 1, 4, 4, 'All four covered.');"
 
+# Daylight saving guard. 08:15 Eastern is 12:15 UTC while EDT is in force and 13:15 UTC
+# after 1 November. So "15 13 * * *" is the November value, and asserting that it reads
+# as drift TODAY is the same check that will catch the real transition in reverse.
+d1 "INSERT INTO registry (key, entity, role, room, source, expected_every_minutes, status,
+                          last_run_at, first_run_at, created_at, local_time, timezone, cron_utc)
+    VALUES ('test:drifted','test','drifted','field','routine',1440,'active',
+            datetime('now','-10 minutes'), datetime('now','-1 day'), datetime('now','-1 day'),
+            '08:15','America/New_York','15 13 * * *');"
+
+d1 "INSERT INTO registry (key, entity, role, room, source, expected_every_minutes, status,
+                          last_run_at, first_run_at, created_at, local_time, timezone, cron_utc)
+    VALUES ('test:ontime','test','ontime','field','routine',1440,'active',
+            datetime('now','-10 minutes'), datetime('now','-1 day'), datetime('now','-1 day'),
+            '08:15','America/New_York','15 12 * * *');"
+
 echo "== starting worker =="
 npx wrangler dev --local --port "$PORT" >/tmp/estate-dev.log 2>&1 &
 DEV_PID=$!
@@ -104,7 +119,16 @@ assert_no_finding() {
 assert_finding "test:overdue" "overdue"
 assert_finding "test:neverran" "never_ran"
 assert_finding "test:undercovered" "undercovered"
+assert_finding "test:drifted" "schedule_drift"
 assert_no_finding "test:healthy"
+assert_no_finding "test:ontime"
+
+echo "== the drift finding must name the correct cron =="
+if echo "$FINDINGS" | grep -q 'Correct cron is'; then
+  echo "  PASS  drift detail names the cron that would fix it"
+else
+  echo "  FAIL  drift detail does not name a corrected cron"; echo "$FINDINGS"; exit 1
+fi
 
 echo "== findings must not duplicate on a second cycle =="
 # Counted over this test's own keys only. A global count would make the test sensitive to
