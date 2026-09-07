@@ -85,7 +85,7 @@ Unknown is not verified.
 | What it is | What you do |
 |---|---|
 | A business correcting its own listing | Step 5 |
-| Someone submitting a business for listing | `propose_candidate`, with the message as the source |
+| Someone submitting a business for listing | Step 4a |
 | A complaint, or a report that a listing is wrong | Open a `verify_request` ticket. **Stage nothing.** One report is a ticket; a pattern is somebody else's to confirm |
 | Someone claiming a listing they say they own | Open a `claim` ticket. Never act on the claim yourself |
 | A sales or advertising enquiry | Open a `sales` ticket |
@@ -94,6 +94,58 @@ Unknown is not verified.
 **A message you cannot classify is a ticket, not a silence.** Guessing is worse than
 asking, and both are far better than doing nothing, which is the only outcome nobody
 can see.
+
+**4a. Somebody suggested a business. Propose it as a candidate.**
+
+Submissions reach you two ways and are handled identically: an email a person wrote, and
+the public form on the site, which files into this same queue with `channel: "form"`.
+Neither is trusted, and neither can ever be `sender_verified`, so neither ever changes an
+existing listing. Both can propose a new one.
+
+```
+POST https://patriot.directory/api/automation/candidates
+Authorization: Bearer <DIRECTORY_TOKEN>
+
+{"name":"…", "found_by":"{registry_key}",
+ "evidence":"the sentence that says why this qualifies",
+ "confidence":"high|medium|low",
+ "website":"https://…", "city":"…", "state":"…"}
+```
+
+**The actor field on this route is `found_by`, and nothing else.** Not `proposed_by`,
+not `routine`, not `agent`, not `registry_key`. Those four names all appear on other
+routes in this same API for the same idea, which is exactly why this one is easy to get
+wrong: send any of them and the route returns `400 found_by is required` and your
+candidate does not exist.
+
+`evidence` is required and must be **at least ten characters** after trimming. It is the
+sentence a human reads when deciding, so quote what the sender actually said about the
+business rather than describing that they said something.
+
+`confidence` must be `high`, `medium` or `low`. **Anything else is silently read as
+`low`**, which sorts it to the bottom of a queue of seventeen and means nobody sees it.
+A submission from the owner, naming a real website, is `medium` at best: somebody wanting
+to be listed is not evidence that they qualify.
+
+**Read the response. `200` does not mean accepted.**
+
+| Response | What it means | What you do |
+|---|---|---|
+| `201 {"accepted":true,"created":true}` | New candidate, in the queue | Report it as `candidate` |
+| `200 {"accepted":true,"updated":true}` | Already proposed, details refreshed | Report it as `candidate` |
+| `200 {"accepted":false,"reason":"already listed"}` | It is already in the directory | A completed conclusion. Report `no_action` and say why |
+| `200 {"accepted":false,…}` | Already reviewed and rejected before | Same. Do not re-propose it |
+| `400` | Your payload was wrong | **Not a conclusion.** See below |
+
+A `400` here is the one failure that would otherwise be invisible: the route refuses you,
+nothing is written, and if you go on to triage the message and report `outcome:
+"candidate"` then the run says it did something it did not do, the message is out of the
+queue, and the submission is gone with no trace anywhere.
+
+So on a `400`: **leave the message `new`, do not triage it, report `ok: false`, and put
+the exact error text in your detail.** It counts against `actual`, not toward it. A
+contract you got wrong is a thing a human must fix, and the only way they learn about it
+is you saying so.
 
 **5. A listing change request — validated, then acted on.**
 
