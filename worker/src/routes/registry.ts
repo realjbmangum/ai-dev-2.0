@@ -98,14 +98,21 @@ registry.post("/", async (c) => {
     return c.json({ error: `status must be one of: ${[...STATUSES].join(", ")}` }, 400);
   }
 
-  // An active thing with no expectation is invisible to the watcher, which is the exact
-  // hole this whole system exists to close. Registering one is almost always a mistake,
-  // so it is refused rather than accepted quietly.
-  if (status === "active" && body.expected_every_minutes == null) {
+  /*
+   * An active thing with no expectation is invisible to the watcher, which is the exact
+   * hole this system exists to close, so it is refused rather than accepted quietly.
+   *
+   * Cockpit work is the one honest exception. A procedure Brian runs by hand when he
+   * wants it has no cadence to miss, and inventing one would manufacture overdue
+   * findings for something that is behaving correctly by sitting still. The exception is
+   * narrow on purpose: a FIELD agent with no cadence is still a bug, because a scheduled
+   * thing that cannot be timed is precisely what went undetected for five days.
+   */
+  if (status === "active" && body.expected_every_minutes == null && room !== "cockpit") {
     return c.json(
       {
         error:
-          "an active row needs expected_every_minutes, or the watcher can never tell that it stopped. Use status 'planned' while you work out the cadence.",
+          "an active row needs expected_every_minutes, or the watcher can never tell that it stopped. Use status 'planned' while you work out the cadence, or room 'cockpit' if this is on-demand work with no schedule.",
       },
       400
     );

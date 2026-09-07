@@ -29,6 +29,16 @@ d1() { npx wrangler d1 execute estate-db --local --command "$1" >/dev/null 2>&1;
 
 echo "== seeding four test rows in known states =="
 
+# Clear the rate-limit window. The suite makes ~60 requests in under a minute, so two
+# runs back to back trip the 90-per-IP ceiling and the whole thing fails at the first
+# assertion with a 429. That is the limiter working, not a bug, but it makes the test
+# flaky against itself.
+d1 "DELETE FROM rate_limit;"
+
+# Drafts accumulate across runs, and the rejection-count assertion is exact, so a second
+# run would see three rejections where it expects one. Test isolation, not a product bug.
+d1 "DELETE FROM drafts WHERE registry_key LIKE 'test:%' OR registry_key = 'admin';"
+
 d1 "DELETE FROM findings WHERE registry_key LIKE 'test:%';"
 d1 "DELETE FROM agent_runs WHERE registry_key LIKE 'test:%';"
 d1 "DELETE FROM registry WHERE key LIKE 'test:%';"
@@ -177,6 +187,27 @@ CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/registry" \
   -d '{"key":"test:blind","entity":"test","role":"blind","source":"routine","status":"active"}')
 [ "$CODE" = "400" ] || { echo "FAIL: registering an unwatchable active row returned $CODE, expected 400"; exit 1; }
 echo "  PASS  an active row with no cadence is refused"
+
+echo "== on-demand cockpit work may be active with no cadence =="
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/registry" \
+  -H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json' \
+  -d '{"key":"test:cockpit","entity":"test","role":"cockpit","room":"cockpit","source":"local_task","status":"active"}')
+[ "$CODE" = "200" ] || { echo "FAIL: active cockpit row with no cadence returned $CODE, expected 200"; exit 1; }
+echo "  PASS  a cockpit row may be active without a cadence"
+
+# And the exception stays narrow: a scheduled thing that cannot be timed is still a bug.
+CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE}/api/registry" \
+  -H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json' \
+  -d '{"key":"test:blindfield","entity":"test","role":"blind","room":"field","source":"routine","status":"active"}')
+[ "$CODE" = "400" ] || { echo "FAIL: active FIELD row with no cadence returned $CODE, expected 400"; exit 1; }
+echo "  PASS  a field row with no cadence is still refused"
+
+# A cockpit row must not then be flagged overdue for sitting still.
+curl -fsS -X POST "${BASE}/api/watchy/run" -H "Authorization: Bearer ${TOKEN}" >/dev/null
+COCKPIT=$(curl -fsS "${BASE}/api/registry/findings" -H "Authorization: Bearer ${TOKEN}" | grep -c 'test:cockpit' || true)
+[ "$COCKPIT" = "0" ] || { echo "FAIL: cockpit row produced a finding for having no cadence"; exit 1; }
+echo "  PASS  a cockpit row sitting still produces no finding"
+d1 "DELETE FROM registry WHERE key IN ('test:cockpit','test:blindfield');"
 
 echo "== per-agent identity =="
 # Two agents, each with its own token. Only the hash is ever stored, so the estate never
