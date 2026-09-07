@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estate Map</title>
+<style>
+  :root{
+    --ink:#14161b; --ink2:#464c55; --ink3:#767d87; --ink4:#a8aeb6;
+    --bg:#f7f5f2; --card:#fff; --line:#e4e0da; --line2:#d3cec6;
+    --d1:#20527d;  --d1bg:#eef4fa;  --d1line:#b9d2e6;
+    --git:#6b3fa0; --gitbg:#f4f0fa; --gitline:#d6c9ec;
+    --agent:#1f6b45; --agentbg:#eef7f2; --agentline:#c2ded0;
+    --warn:#8a5a12; --warnbg:#fdf8ef;
+    --red:#a3262b; --redbg:#fdf2f2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1140px;margin:0 auto;padding:52px 28px 110px}
+
+  header{margin-bottom:44px}
+  .eyebrow{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink3);font-weight:700;margin-bottom:12px}
+  h1{font-size:38px;line-height:1.12;margin:0 0 12px;letter-spacing:-.03em}
+  .sub{color:var(--ink2);font-size:17px;margin:0;max-width:640px}
+
+  h2{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);
+    margin:64px 0 6px;font-weight:700}
+  h2 + .h2sub{color:var(--ink);font-size:25px;letter-spacing:-.02em;
+    margin:0 0 20px;font-weight:600;line-height:1.25}
+  h3{font-size:17px;margin:28px 0 8px;letter-spacing:-.01em}
+  p{margin:0 0 14px}
+  code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:#efece7;padding:1.5px 5px;border-radius:3px;color:#3a3e46}
+
+  .fig{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:26px 24px;margin:22px 0 26px;overflow-x:auto}
+  .fig svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .cap{color:var(--ink3);font-size:13px;margin-top:16px;text-align:center;
+    padding-top:14px;border-top:1px solid var(--line)}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}
+  @media (max-width:800px){.two{grid-template-columns:1fr}}
+  .panel{border-radius:11px;padding:20px 22px;border:1px solid}
+  .panel.d1{background:var(--d1bg);border-color:var(--d1line)}
+  .panel.git{background:var(--gitbg);border-color:var(--gitline)}
+  .panel h4{margin:0 0 3px;font-size:19px;letter-spacing:-.01em}
+  .panel .who{font-size:12px;color:var(--ink3);margin-bottom:14px;
+    letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  .panel ul{margin:0;padding-left:19px}
+  .panel li{margin-bottom:7px;font-size:14.5px}
+  .panel .k{font-weight:600}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14.5px;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th{text-align:left;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink3);padding:11px 13px;border-bottom:2px solid var(--line);
+    font-weight:700;background:#fbfaf8}
+  td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.n{white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;padding:2.5px 8px;border-radius:4px;white-space:nowrap}
+  .p-d1{background:var(--d1bg);color:var(--d1);border:1px solid var(--d1line)}
+  .p-git{background:var(--gitbg);color:var(--git);border:1px solid var(--gitline)}
+  .p-miss{background:var(--redbg);color:var(--red);border:1px solid #eccccd}
+  .p-stale{background:var(--warnbg);color:var(--warn);border:1px solid #eddcbe}
+  .p-ok{background:var(--agentbg);color:var(--agent);border:1px solid var(--agentline)}
+
+  .box{border-left:3px solid var(--line2);background:var(--card);padding:17px 20px;
+    margin:22px 0;border-radius:0 9px 9px 0}
+  .box.warn{border-left-color:var(--warn);background:var(--warnbg)}
+  .box.red{border-left-color:var(--red);background:var(--redbg)}
+  .box.ok{border-left-color:var(--agent);background:var(--agentbg)}
+  .box.d1{border-left-color:var(--d1);background:var(--d1bg)}
+  .box .t{font-weight:700;margin-bottom:7px;font-size:16px}
+  .box p:last-child{margin-bottom:0}
+
+  ul.plain{margin:0 0 16px;padding-left:20px} ul.plain li{margin-bottom:8px}
+  .quiet{color:var(--ink3);font-size:13.5px}
+  footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);
+    color:var(--ink3);font-size:13px}
+  @media print{body{background:#fff}.wrap{padding:0}.fig,table,.box,.panel{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lighthouse 27 &middot; 6 September 2026</div>
+  <h1>How the estate actually works</h1>
+  <p class="sub">Where every piece of state lives, why it lives there, and which of the two stores is the source of truth for what.</p>
+</header>
+
+<!-- ============================= 1 ============================= -->
+<h2>One</h2>
+<div class="h2sub">Two stores, and they hold different kinds of thing</div>
+
+<p>This is the question underneath all the others. There are exactly two places state lives, and mixing them up is what made the last three weeks confusing.</p>
+
+<div class="fig">
+<svg viewBox="0 0 940 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two stores: Cloudflare D1 for telemetry, GitHub for narrative">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 z" fill="#767d87"/>
+    </marker>
+  </defs>
+
+  <!-- D1 side -->
+  <rect x="20" y="60" width="410" height="310" rx="12" fill="#eef4fa" stroke="#b9d2e6" stroke-width="1.5"/>
+  <text x="44" y="92" font-family="-apple-system,sans-serif" font-size="19" font-weight="700" fill="#20527d">Cloudflare D1</text>
+  <text x="44" y="113" font-family="ui-monospace,monospace" font-size="13" fill="#20527d">estate-db</text>
+  <text x="44" y="137" font-family="-apple-system,sans-serif" font-size="12.5" fill="#5b6570">What a machine queries, every 15 minutes.</text>
+
+  <g font-family="ui-monospace,monospace" font-size="13" fill="#20527d">
+    <rect x="44" y="155" width="170" height="30" rx="6" fill="#fff" stroke="#b9d2e6"/><text x="56" y="175">registry</text>
+    <rect x="228" y="155" width="170" height="30" rx="6" fill="#fff" stroke="#b9d2e6"/><text x="240" y="175">agent_runs</text>
+    <rect x="44" y="193" width="170" height="30" rx="6" fill="#fff" stroke="#b9d2e6"/><text x="56" y="213">findings</text>
+    <rect x="228" y="193" width="170" height="30" rx="6" fill="#fff" stroke="#b9d2e6"/><text x="240" y="213">estate_control</text>
+    <rect x="44" y="231" width="170" height="30" rx="6" fill="#fff" stroke="#b9d2e6"/><text x="56" y="251">guides</text>
+    <rect x="228" y="231" width="170" height="30" rx="6" fill="#fff" stroke="#b9d2e6"/><text x="240" y="251">roles / hires</text>
+  </g>
+  <text x="44" y="292" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#20527d">Why here</text>
+  <text x="44" y="312" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">Queryable. The whole watcher is one SQL query.</text>
+  <text x="44" y="330" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">Reachable by a headless routine with only a token.</text>
+  <text x="44" y="348" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">Concurrent-safe. Invariants enforced by the schema.</text>
+
+  <!-- Git side -->
+  <rect x="510" y="60" width="410" height="310" rx="12" fill="#f4f0fa" stroke="#d6c9ec" stroke-width="1.5"/>
+  <text x="534" y="92" font-family="-apple-system,sans-serif" font-size="19" font-weight="700" fill="#6b3fa0">GitHub</text>
+  <text x="534" y="113" font-family="ui-monospace,monospace" font-size="13" fill="#6b3fa0">one repo per entity</text>
+  <text x="534" y="137" font-family="-apple-system,sans-serif" font-size="12.5" fill="#5b6570">What a human writes and reads.</text>
+
+  <g font-family="ui-monospace,monospace" font-size="13" fill="#6b3fa0">
+    <rect x="534" y="155" width="170" height="30" rx="6" fill="#fff" stroke="#d6c9ec"/><text x="546" y="175">voice guides</text>
+    <rect x="718" y="155" width="170" height="30" rx="6" fill="#fff" stroke="#d6c9ec"/><text x="730" y="175">role templates</text>
+    <rect x="534" y="193" width="170" height="30" rx="6" fill="#fff" stroke="#d6c9ec"/><text x="546" y="213">roster / hires</text>
+    <rect x="718" y="193" width="170" height="30" rx="6" fill="#fff" stroke="#d6c9ec"/><text x="730" y="213">migrations</text>
+    <rect x="534" y="231" width="354" height="30" rx="6" fill="#fff" stroke="#d6c9ec"/><text x="546" y="251">the work log  ·  commit history</text>
+  </g>
+  <text x="534" y="292" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#6b3fa0">Why here</text>
+  <text x="534" y="312" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">Diffable. You can see what changed and revert it.</text>
+  <text x="534" y="330" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">Reviewable. A guide edit is a PR you read.</text>
+  <text x="534" y="348" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">Already the publishable record. You decided that.</text>
+
+  <line x1="430" y1="215" x2="505" y2="215" stroke="#767d87" stroke-width="1.5" marker-end="url(#ar)" stroke-dasharray="4 3"/>
+  <text x="468" y="205" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">sync</text>
+
+  <text x="20" y="32" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#14161b">TELEMETRY</text>
+  <text x="120" y="32" font-family="-apple-system,sans-serif" font-size="13.5" fill="#767d87">high frequency, machine-read</text>
+  <text x="510" y="32" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="700" fill="#14161b">NARRATIVE</text>
+  <text x="612" y="32" font-family="-apple-system,sans-serif" font-size="13.5" fill="#767d87">low frequency, human-read</text>
+</svg>
+<div class="cap">Neither is a copy of the other. They hold different things, so they cannot disagree.</div>
+</div>
+
+<div class="box d1">
+  <div class="t">The one-line rule</div>
+  <p><b>D1 holds what a machine queries. Git holds what a human writes and reads.</b> A copy is a second source of truth and the two will always eventually disagree, which is your own <code>schema-bones-and-vertical-flesh</code> rule. So nothing is copied. The split is by <i>kind</i>, not by convenience.</p>
+</div>
+
+<!-- ============================= 2 ============================= -->
+<h2>Two</h2>
+<div class="h2sub">Why not put everything in GitHub</div>
+
+<p>Your instinct is right that git should carry more than it currently does. But there is a hard constraint, and you have already been bitten by it twice.</p>
+
+<div class="box red">
+  <div class="t">A cloud routine cannot read a private repo</div>
+  <p>Sixty-four of your sixty-seven repos are private. <code>allowed_push_branches</code> is <code>[]</code> on every routine you have, and not one of them carries a GitHub connector.</p>
+  <p>This already cost you real output. Your own 5 September review put it plainly: <i>"All your repos are private. I checked. So grok cannot see a single thing you build, which is why 'one I-built draft' has never had a source and why brackets kept creeping in."</i> And in August, ascend-systems moved every agent doc <b>off git and into D1</b> for exactly this reason. That migration's own comment says it "blocked making the repo private, since it was unclear whether the Routine runner clones authenticated."</p>
+</div>
+
+<p>Three further costs, all real but smaller:</p>
+
+<table>
+<thead><tr><th>Cost</th><th>What it means in practice</th></tr></thead>
+<tbody>
+<tr><td class="n"><b>Querying is grep</b></td><td>"Show me everything that went quiet in the last 30 days" is one SQL line against D1 and a scripting problem against git. Watchy runs that query 96 times a day.</td></tr>
+<tr><td class="n"><b>Writes collide</b></td><td>Two agents appending to one log file on the same day is a merge conflict. Two rows in D1 is nothing.</td></tr>
+<tr><td class="n"><b>Commits trigger builds</b></td><td>Several of your repos auto-deploy on push. A telemetry commit every 15 minutes would rebuild the site every 15 minutes.</td></tr>
+</tbody>
+</table>
+
+<h3>And why not put everything in D1</h3>
+
+<p>Because you already decided otherwise, correctly. On 29 August you retired <code>ship_logs</code> with the reasoning that <b>the publishable record is the git history</b>, settling a contradiction that had been sitting in your rules for months. A narrative log in a database is a log nobody reads, cannot diff, and cannot review in a PR.</p>
+
+<div class="box ok">
+  <div class="t">So the split is not a compromise. It is the correct answer.</div>
+  <p>The word "log" was doing two jobs. <b>Telemetry</b> (did it fire, expected versus actual, is anything overdue) is machine data, queried constantly, and belongs in D1. <b>Narrative</b> (what we did, what we decided, what broke and why) is writing, read by people, and belongs in git. Putting either in the other's home is what has been making this feel hard.</p>
+</div>
+
+<!-- ============================= 3 ============================= -->
+<h2>Three</h2>
+<div class="h2sub">How a routine writes to git without being able to push</div>
+
+<p>This is the mechanism that makes your instinct workable. The routine never touches git. It posts, and something inside GitHub does the writing.</p>
+
+<div class="fig">
+<svg viewBox="0 0 940 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flow from agent through estate API to D1 and GitHub">
+  <defs>
+    <marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="3.4" orient="auto">
+      <path d="M0,0 L7.5,3.4 L0,6.8 z" fill="#5b6570"/>
+    </marker>
+  </defs>
+
+  <!-- agent -->
+  <rect x="20" y="112" width="160" height="80" rx="10" fill="#eef7f2" stroke="#c2ded0" stroke-width="1.5"/>
+  <text x="100" y="142" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="15" font-weight="700" fill="#1f6b45">Agent</text>
+  <text x="100" y="162" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">headless, cloud</text>
+  <text x="100" y="178" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">holds only a token</text>
+
+  <line x1="184" y1="152" x2="250" y2="152" stroke="#5b6570" stroke-width="1.6" marker-end="url(#ar2)"/>
+  <text x="217" y="142" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10.5" fill="#5b6570">HTTPS</text>
+
+  <!-- estate api -->
+  <rect x="254" y="98" width="180" height="108" rx="10" fill="#fff" stroke="#d3cec6" stroke-width="1.5"/>
+  <text x="344" y="128" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="15" font-weight="700" fill="#14161b">estate-api</text>
+  <text x="344" y="147" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">Cloudflare Worker</text>
+  <text x="344" y="169" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">the only door</text>
+  <text x="344" y="188" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">agents have</text>
+
+  <!-- to D1 -->
+  <path d="M438,130 L520,130 L520,72 L596,72" fill="none" stroke="#20527d" stroke-width="1.6" marker-end="url(#ar2)"/>
+  <text x="524" y="62" font-family="-apple-system,sans-serif" font-size="11" fill="#20527d">immediately</text>
+  <rect x="600" y="42" width="320" height="62" rx="10" fill="#eef4fa" stroke="#b9d2e6" stroke-width="1.5"/>
+  <text x="620" y="68" font-family="-apple-system,sans-serif" font-size="14.5" font-weight="700" fill="#20527d">D1 &middot; estate-db</text>
+  <text x="620" y="88" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">telemetry, queryable the moment it lands</text>
+
+  <!-- to git -->
+  <path d="M438,174 L520,174 L520,246 L596,246" fill="none" stroke="#6b3fa0" stroke-width="1.6" marker-end="url(#ar2)"/>
+  <text x="524" y="238" font-family="-apple-system,sans-serif" font-size="11" fill="#6b3fa0">nightly, batched</text>
+  <rect x="600" y="216" width="320" height="62" rx="10" fill="#f4f0fa" stroke="#d6c9ec" stroke-width="1.5"/>
+  <text x="620" y="242" font-family="-apple-system,sans-serif" font-size="14.5" font-weight="700" fill="#6b3fa0">GitHub</text>
+  <text x="620" y="262" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">one commit a day, written by a GitHub Action</text>
+
+  <!-- action back -->
+  <path d="M760,216 L760,180 L344,180 L344,210" fill="none" stroke="#6b3fa0" stroke-width="1.3"
+        stroke-dasharray="4 4" opacity="0"/>
+  <text x="20" y="292" font-family="-apple-system,sans-serif" font-size="12.5" fill="#5b6570">
+    The Action runs inside GitHub with full repo access, so no credential ever sits in a routine prompt.
+  </text>
+  <text x="20" y="312" font-family="-apple-system,sans-serif" font-size="12.5" fill="#5b6570">
+    That matters: your bearer token appeared verbatim in Sparky's own run transcript, readable by anyone who could list routines.
+  </text>
+</svg>
+<div class="cap">The same shape <code>jbmangum-inbox</code> already uses, run in reverse.</div>
+</div>
+
+<!-- ============================= 4 ============================= -->
+<h2>Four</h2>
+<div class="h2sub">Loggy, corrected</div>
+
+<div class="box red">
+  <div class="t">You caught a real error</div>
+  <p>I had Loggy writing to <code>ascend-db.session_log</code>. <b>That is Ascend Systems' client-facing CRM database.</b> Putting the estate-wide work log inside one child entity's database is backwards, and it is the same category error your own desk README already forbids: <i>"This Worker binds DB to jbmangum-desk and nothing else. It never binds ascend-db."</i></p>
+  <p>I inherited it from the existing convention without questioning it. The convention is wrong, not just my application of it.</p>
+</div>
+
+<h3>What Loggy does instead</h3>
+
+<div class="two">
+  <div class="panel git">
+    <h4>The entry</h4>
+    <div class="who">git &middot; the entity's own repo</div>
+    <ul>
+      <li>One markdown file per day, per project touched.</li>
+      <li>Written by a GitHub Action, so no credential leaves Cloudflare.</li>
+      <li>Diffable, reviewable, and already the publishable record.</li>
+      <li class="k">Source of truth.</li>
+    </ul>
+  </div>
+  <div class="panel d1">
+    <h4>The index</h4>
+    <div class="who">D1 &middot; estate-db</div>
+    <ul>
+      <li>Date, project, commit SHA, one-line summary.</li>
+      <li>Enough to answer "which projects went quiet" in SQL.</li>
+      <li>Never the prose. The prose is in git.</li>
+      <li class="k">A pointer, not a copy.</li>
+    </ul>
+  </div>
+</div>
+
+<p>Loggy exists because the rule is mandatory, manual, and mostly not happening. Across your entire filesystem, <b>only three repos have ever produced a session log row</b>, and a headless routine cannot produce one at all, because writing one today means hand-authoring SQL and running wrangler.</p>
+
+<!-- ============================= 5 ============================= -->
+<h2>Five</h2>
+<div class="h2sub">Voice guides: one per voice, in its own repo</div>
+
+<p>Yes, exactly as you described it. But there are <b>two axes</b>, and seeing both is what makes the system work.</p>
+
+<div class="fig">
+<svg viewBox="0 0 940 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Voice guide tree: shared mechanical rules, then per entity and per surface">
+  <!-- root -->
+  <rect x="290" y="16" width="360" height="66" rx="10" fill="#14161b"/>
+  <text x="470" y="42" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="14.5" font-weight="700" fill="#fff">The mechanical rules</text>
+  <text x="470" y="63" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11.5" fill="#c8ccd2">no em dashes · no litotes · no hustle register · no preaching</text>
+
+  <text x="290" y="103" font-family="-apple-system,sans-serif" font-size="11.5" fill="#767d87">These are yours as a writer. They apply everywhere you write, in every entity.</text>
+
+  <line x1="470" y1="82" x2="470" y2="122" stroke="#a8aeb6" stroke-width="1.4"/>
+  <line x1="115" y1="122" x2="825" y2="122" stroke="#a8aeb6" stroke-width="1.4"/>
+  <line x1="115" y1="122" x2="115" y2="146" stroke="#a8aeb6" stroke-width="1.4"/>
+  <line x1="352" y1="122" x2="352" y2="146" stroke="#a8aeb6" stroke-width="1.4"/>
+  <line x1="588" y1="122" x2="588" y2="146" stroke="#a8aeb6" stroke-width="1.4"/>
+  <line x1="825" y1="122" x2="825" y2="146" stroke="#a8aeb6" stroke-width="1.4"/>
+
+  <!-- JB -->
+  <rect x="20" y="146" width="190" height="52" rx="9" fill="#fff" stroke="#d3cec6" stroke-width="1.5"/>
+  <text x="115" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="14" font-weight="700">JB Mangum</text>
+  <text x="115" y="188" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">building in public</text>
+  <rect x="20" y="212" width="190" height="46" rx="7" fill="#f4f0fa" stroke="#d6c9ec"/>
+  <text x="34" y="231" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">blog</text>
+  <text x="34" y="248" font-family="ui-monospace,monospace" font-size="9.5" fill="#6b3fa0">site-jbmangum/voice-guide.md</text>
+  <rect x="20" y="264" width="190" height="46" rx="7" fill="#f4f0fa" stroke="#d6c9ec"/>
+  <text x="34" y="283" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">X</text>
+  <text x="34" y="300" font-family="ui-monospace,monospace" font-size="9.5" fill="#6b3fa0">jbmangum-inbox/voice.md</text>
+
+  <!-- CC -->
+  <rect x="257" y="146" width="190" height="52" rx="9" fill="#fff" stroke="#d3cec6" stroke-width="1.5"/>
+  <text x="352" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="14" font-weight="700">Crown and Compass</text>
+  <text x="352" y="188" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">contemplative pilgrim</text>
+  <rect x="257" y="212" width="190" height="46" rx="7" fill="#f4f0fa" stroke="#d6c9ec"/>
+  <text x="271" y="231" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">prose</text>
+  <text x="271" y="248" font-family="ui-monospace,monospace" font-size="9.5" fill="#6b3fa0">brand/voice.md</text>
+  <rect x="257" y="264" width="190" height="46" rx="7" fill="#f4f0fa" stroke="#d6c9ec"/>
+  <text x="271" y="283" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">visual</text>
+  <text x="271" y="300" font-family="ui-monospace,monospace" font-size="9.5" fill="#6b3fa0">brand/design-grammar.md</text>
+  <rect x="257" y="316" width="190" height="46" rx="7" fill="#fdf8ef" stroke="#eddcbe"/>
+  <text x="271" y="335" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">app UI</text>
+  <text x="271" y="352" font-family="ui-monospace,monospace" font-size="9.5" fill="#8a5a12">.impeccable.md</text>
+
+  <!-- Directories -->
+  <rect x="493" y="146" width="190" height="52" rx="9" fill="#fff" stroke="#d3cec6" stroke-width="1.5"/>
+  <text x="588" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="14" font-weight="700">The Directories</text>
+  <text x="588" y="188" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">restrained civic editorial</text>
+  <rect x="493" y="212" width="190" height="46" rx="7" fill="#f4f0fa" stroke="#d6c9ec"/>
+  <text x="507" y="231" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">listing tone</text>
+  <text x="507" y="248" font-family="ui-monospace,monospace" font-size="9.5" fill="#6b3fa0">patriot/voice/tone.md</text>
+  <rect x="493" y="264" width="190" height="46" rx="7" fill="#fdf2f2" stroke="#eccccd"/>
+  <text x="507" y="283" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">per property</text>
+  <text x="507" y="300" font-family="ui-monospace,monospace" font-size="9.5" fill="#a3262b">recordstops, potty: none</text>
+
+  <!-- Ascend -->
+  <rect x="730" y="146" width="190" height="52" rx="9" fill="#fff" stroke="#d3cec6" stroke-width="1.5"/>
+  <text x="825" y="170" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="14" font-weight="700">Ascend Systems</text>
+  <text x="825" y="188" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">professional services</text>
+  <rect x="730" y="212" width="190" height="46" rx="7" fill="#fdf2f2" stroke="#eccccd"/>
+  <text x="744" y="231" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">client-facing</text>
+  <text x="744" y="248" font-family="ui-monospace,monospace" font-size="9.5" fill="#a3262b">none exists</text>
+  <rect x="730" y="264" width="190" height="46" rx="7" fill="#fdf8ef" stroke="#eddcbe"/>
+  <text x="744" y="283" font-family="-apple-system,sans-serif" font-size="12" font-weight="600">brand kit</text>
+  <text x="744" y="300" font-family="ui-monospace,monospace" font-size="9.5" fill="#8a5a12">exists, but not a voice</text>
+
+  <text x="20" y="398" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#14161b">AXIS ONE, down the page:</text>
+  <text x="215" y="398" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">entity. Four genuinely different registers. These are not variations of one voice.</text>
+  <text x="20" y="420" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="700" fill="#14161b">AXIS TWO, within each:</text>
+  <text x="215" y="420" font-family="-apple-system,sans-serif" font-size="12.5" fill="#464c55">surface. An X post and a blog post are different jobs even in the same voice.</text>
+  <text x="20" y="450" font-family="-apple-system,sans-serif" font-size="12.5" fill="#767d87">Purple exists · amber exists but is wrong or stale · red is missing entirely. Every drafting agent is blocked until its own box is purple.</text>
+</svg>
+<div class="cap">One guide per box. Voicey writes a PR into whichever repo the box lives in.</div>
+</div>
+
+<div class="box warn">
+  <div class="t">What that map says about the roster</div>
+  <p><b>Tidy can run today</b>, because <code>patriot/voice/tone.md</code> is purple. <b>Wordy and Designy are blocked</b> on guides that exist but are wrong: C&amp;C's brand standards describe fonts the site stopped using, and the design grammar on disk is twenty lines behind what the routines actually read. <b>Salesy is blocked</b> on a guide that does not exist at all: Ascend has a nineteen-thousand-word brand kit and no statement of how it sounds.</p>
+</div>
+
+<!-- ============================= 6 ============================= -->
+<h2>Six</h2>
+<div class="h2sub">Everything, on one page</div>
+
+<div class="fig">
+<svg viewBox="0 0 940 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Full estate map">
+  <defs>
+    <marker id="ar3" markerWidth="9" markerHeight="9" refX="7.4" refY="3.1" orient="auto">
+      <path d="M0,0 L7,3.1 L0,6.2 z" fill="#767d87"/>
+    </marker>
+    <marker id="ar3g" markerWidth="9" markerHeight="9" refX="7.4" refY="3.1" orient="auto">
+      <path d="M0,0 L7,3.1 L0,6.2 z" fill="#1f6b45"/>
+    </marker>
+  </defs>
+
+  <!-- YOU -->
+  <rect x="370" y="14" width="200" height="54" rx="10" fill="#14161b"/>
+  <text x="470" y="38" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="15" font-weight="700" fill="#fff">You, 5 to 10 minutes</text>
+  <text x="470" y="57" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#c8ccd2">the desk at app.jbmangum.com</text>
+
+  <!-- agents band -->
+  <rect x="20" y="112" width="900" height="112" rx="12" fill="#eef7f2" stroke="#c2ded0" stroke-width="1.5"/>
+  <text x="40" y="136" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#1f6b45" letter-spacing="1.5">THE TEAM</text>
+
+  <g font-family="-apple-system,sans-serif" font-size="11.5" fill="#14161b">
+    <rect x="40" y="148" width="96" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="88" y="170" text-anchor="middle" font-weight="700">Watchy</text><text x="88" y="188" text-anchor="middle" fill="#767d87">15 min</text>
+    <rect x="146" y="148" width="96" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="194" y="170" text-anchor="middle" font-weight="700">Loggy</text><text x="194" y="188" text-anchor="middle" fill="#767d87">nightly</text>
+    <rect x="252" y="148" width="96" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="300" y="170" text-anchor="middle" font-weight="700">Voicey</text><text x="300" y="188" text-anchor="middle" fill="#767d87">on demand</text>
+    <rect x="368" y="148" width="96" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="416" y="170" text-anchor="middle" font-weight="700">Posty</text><text x="416" y="188" text-anchor="middle" fill="#767d87">daily</text>
+    <rect x="474" y="148" width="96" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="522" y="170" text-anchor="middle" font-weight="700">Blogy</text><text x="522" y="188" text-anchor="middle" fill="#767d87">weekly</text>
+    <rect x="580" y="148" width="96" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="628" y="170" text-anchor="middle" font-weight="700">Tidy</text><text x="628" y="188" text-anchor="middle" fill="#767d87">weekly</text>
+    <rect x="686" y="148" width="96" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="734" y="170" text-anchor="middle" font-weight="700">Wordy</text><text x="734" y="188" text-anchor="middle" fill="#767d87">weekly</text>
+    <rect x="792" y="148" width="112" height="56" rx="7" fill="#fff" stroke="#c2ded0"/>
+    <text x="848" y="170" text-anchor="middle" font-weight="700">+ six more</text><text x="848" y="188" text-anchor="middle" fill="#767d87">weekly, monthly</text>
+  </g>
+
+  <!-- up arrow to you -->
+  <path d="M470,110 L470,72" fill="none" stroke="#1f6b45" stroke-width="1.8" marker-end="url(#ar3g)"/>
+  <text x="482" y="96" font-family="-apple-system,sans-serif" font-size="11" fill="#1f6b45">proposals, never actions</text>
+
+  <!-- estate api -->
+  <rect x="352" y="262" width="236" height="66" rx="10" fill="#fff" stroke="#14161b" stroke-width="1.8"/>
+  <text x="470" y="288" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="15" font-weight="700">estate-api</text>
+  <text x="470" y="308" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">bearer token · the only door agents have</text>
+
+  <line x1="470" y1="226" x2="470" y2="258" stroke="#767d87" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <text x="482" y="248" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">every run reports</text>
+
+  <!-- D1 -->
+  <rect x="20" y="380" width="420" height="118" rx="11" fill="#eef4fa" stroke="#b9d2e6" stroke-width="1.5"/>
+  <text x="42" y="406" font-family="-apple-system,sans-serif" font-size="14.5" font-weight="700" fill="#20527d">D1 &middot; estate-db</text>
+  <text x="42" y="426" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">telemetry &middot; the working index</text>
+  <g font-family="ui-monospace,monospace" font-size="11" fill="#20527d">
+    <text x="42" y="452">registry</text><text x="128" y="452">agent_runs</text><text x="232" y="452">findings</text>
+    <text x="42" y="472">estate_control</text><text x="160" y="472">guides</text><text x="232" y="472">roles / hires</text>
+  </g>
+  <text x="42" y="490" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">Watchy queries this every 15 minutes.</text>
+  <path d="M420,328 L300,328 L300,376" fill="none" stroke="#20527d" stroke-width="1.6" marker-end="url(#ar3)"/>
+  <text x="310" y="352" font-family="-apple-system,sans-serif" font-size="11" fill="#20527d">immediately</text>
+
+  <!-- git -->
+  <rect x="500" y="380" width="420" height="118" rx="11" fill="#f4f0fa" stroke="#d6c9ec" stroke-width="1.5"/>
+  <text x="522" y="406" font-family="-apple-system,sans-serif" font-size="14.5" font-weight="700" fill="#6b3fa0">GitHub &middot; one repo per entity</text>
+  <text x="522" y="426" font-family="-apple-system,sans-serif" font-size="11.5" fill="#5b6570">narrative &middot; the source of truth</text>
+  <g font-family="ui-monospace,monospace" font-size="11" fill="#6b3fa0">
+    <text x="522" y="452">voice guides</text><text x="632" y="452">role templates</text><text x="760" y="452">roster</text>
+    <text x="522" y="472">the work log</text><text x="640" y="472">commit history</text>
+  </g>
+  <text x="522" y="490" font-family="-apple-system,sans-serif" font-size="11" fill="#767d87">You read and review this. A GitHub Action writes it.</text>
+  <path d="M520,328 L640,328 L640,376" fill="none" stroke="#6b3fa0" stroke-width="1.6" marker-end="url(#ar3)"/>
+  <text x="650" y="352" font-family="-apple-system,sans-serif" font-size="11" fill="#6b3fa0">nightly</text>
+
+  <!-- sync back up -->
+  <path d="M440,439 L470,439 L470,412 L496,412" fill="none" stroke="#767d87" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <path d="M496,466 L470,466 L470,439" fill="none" stroke="#767d87" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ar3)"/>
+  <text x="470" y="352" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#767d87"> </text>
+</svg>
+<div class="cap">Guides and templates flow left from git into D1 on merge, so agents read a served copy and you edit a reviewable file.</div>
+</div>
+
+<h3>Reading the map in one paragraph</h3>
+<p>Every agent wakes, fetches its instructions from <code>estate-api</code>, does its work, and posts what it did. That report lands in D1 immediately, where Watchy can query it. Nightly, the narrative half is committed to git by a GitHub Action, which is the only thing in the system with repo write access. You edit voice guides and role templates as files in each entity's repo, and merging pushes them into D1 so agents read exactly what shipped. Nothing an agent produces reaches anyone: it lands on the desk, and you spend five to ten minutes emptying it.</p>
+
+<footer>
+The live registry is <code>estate-db.registry</code>. This page is a reading of a design, not of the database, and it will go stale the moment the two disagree. Where they disagree, the database is right.
+</footer>
+
+</div>
+</body>
+</html>

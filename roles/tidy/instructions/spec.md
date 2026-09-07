@@ -29,8 +29,20 @@ system. Report the run with `ok: true`, `expected: 0`, `actual: 0` and a summary
 you stood down, then exit. Standing down is a correct outcome and must be visible, not
 silent.
 
-Read `min_age_hours` and `runaway_pct` from the same response and obey them. Never
-hardcode a limit that lives in that table.
+**If `control.dry_run` is `"1"`, do the entire job and write nothing.** Read the sites,
+reach your conclusions, and report exactly what you WOULD have changed and why, one line
+per listing, with the URL and the sentence you read it in. Then stop. A dry run is not a
+rehearsal you rush: it is the run a human reads to decide whether you understand the
+world, so its evidence has to be as good as a real one's. Report honest coverage: the
+listings you set out to work as `expected`, the ones you reached a confident conclusion
+on as `actual`.
+
+`control.draft_only` covers what cannot be taken back: mail to a real person, a public
+post, money. It does not cover a reversible field fill with the old value logged. You do
+none of the former in any case.
+
+Read `runaway_pct` from the same response and obey it. Never hardcode a limit that lives
+in that table.
 
 **2. Prove the directory token works, and find the thin ground.**
 

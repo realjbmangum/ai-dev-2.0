@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estate Review, 5 Sep 2026</title>
+<style>
+  :root{
+    --ink:#16181d; --ink2:#4a5058; --ink3:#767d87;
+    --bg:#faf9f7; --card:#fff; --line:#e2ded8;
+    --red:#a3262b; --amber:#8a5a12; --green:#1f6b45; --blue:#20527d;
+    --redbg:#fdf2f2; --ambbg:#fdf8ef; --greenbg:#f1f8f4; --bluebg:#f1f6fa;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 28px 96px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:22px;margin-bottom:38px}
+  h1{font-size:31px;line-height:1.2;margin:0 0 8px;letter-spacing:-.02em}
+  .sub{color:var(--ink2);font-size:15px;margin:0}
+  .meta{color:var(--ink3);font-size:13px;margin-top:10px;font-variant-numeric:tabular-nums}
+  h2{
+    font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);
+    margin:52px 0 16px;padding-bottom:7px;border-bottom:1px solid var(--line);font-weight:700;
+  }
+  h3{font-size:19px;margin:32px 0 10px;letter-spacing:-.01em}
+  h4{font-size:15px;margin:22px 0 6px}
+  p{margin:0 0 14px}
+  code{
+    font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:#f0ede8;padding:1px 5px;border-radius:3px;color:#3c4048;
+  }
+  .lede{font-size:18px;line-height:1.55;color:var(--ink);margin-bottom:20px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:12px;margin:26px 0 34px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:14px 15px}
+  .stat b{display:block;font-size:27px;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat span{display:block;font-size:11.5px;color:var(--ink3);margin-top:5px;line-height:1.35}
+  table{width:100%;border-collapse:collapse;margin:16px 0 22px;font-size:14px;background:var(--card)}
+  th{
+    text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);
+    padding:9px 11px;border-bottom:2px solid var(--line);font-weight:700;
+  }
+  td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0 22px}
+  .scroll table{margin:0;min-width:660px}
+  .pill{
+    display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:2px 7px;border-radius:3px;white-space:nowrap;
+  }
+  .p-dead{background:var(--redbg);color:var(--red);border:1px solid #eccccd}
+  .p-warn{background:var(--ambbg);color:var(--amber);border:1px solid #eddcbe}
+  .p-ok{background:var(--greenbg);color:var(--green);border:1px solid #c9e3d4}
+  .p-info{background:var(--bluebg);color:var(--blue);border:1px solid #ccdeeb}
+  .box{border-left:3px solid var(--line);background:var(--card);padding:15px 18px;margin:20px 0;border-radius:0 6px 6px 0}
+  .box.red{border-left-color:var(--red);background:var(--redbg)}
+  .box.amber{border-left-color:var(--amber);background:var(--ambbg)}
+  .box.blue{border-left-color:var(--blue);background:var(--bluebg)}
+  .box.green{border-left-color:var(--green);background:var(--greenbg)}
+  .box p:last-child{margin-bottom:0}
+  .box .t{font-weight:700;margin-bottom:6px;font-size:15px}
+  ul,ol{margin:0 0 15px;padding-left:22px}
+  li{margin-bottom:7px}
+  .quiet{color:var(--ink3);font-size:13.5px}
+  .rule{border:none;border-top:1px solid var(--line);margin:38px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:720px){.grid2{grid-template-columns:1fr}}
+  .num{
+    display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;
+    border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    margin-right:8px;flex:none;
+  }
+  .q{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:16px 18px;margin-bottom:12px}
+  .q .t{font-weight:700;margin-bottom:5px}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink3);font-size:13px}
+  @media print{
+    body{background:#fff} .wrap{padding:0;max-width:none}
+    .stat,.box,table,.q{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Estate Review: what is actually running</h1>
+  <p class="sub">Crown and Compass, jbmangum, and the whole directory estate. Read before writing the routines PRD.</p>
+  <p class="meta">5 September 2026 &middot; 13 agents &middot; 561 tool calls &middot; verified against live APIs, not docs</p>
+</header>
+
+<p class="lede">You do not have an automation problem. You have five good automation architectures that cannot see each other, spread across three unrelated execution rails, with no registry of what exists and nothing watching whether any of it ran.</p>
+
+<div class="stats">
+  <div class="stat"><b>26</b><span>scheduled things running</span></div>
+  <div class="stat"><b>3</b><span>independent execution rails</span></div>
+  <div class="stat"><b>67</b><span>GitHub repos</span></div>
+  <div class="stat"><b>~45</b><span>D1 databases</span></div>
+  <div class="stat"><b>1</b><span>rail with run visibility</span></div>
+  <div class="stat"><b>0</b><span>cross-rail registries</span></div>
+</div>
+
+<h2>1. The three rails</h2>
+
+<p>Every scheduled thing you own sits on one of three rails. Nothing knows about the other two. This is the single most important fact for the PRD.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Rail</th><th>Count</th><th>Runs where</th><th>Fails how</th><th>Who finds out</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>Claude cloud routines</b><br><span class="quiet">RemoteTrigger</span></td>
+  <td class="n">9<br><span class="quiet">8 enabled</span></td>
+  <td>Anthropic cloud, headless. No wrangler, no git clone on private repos, HTTPS only.</td>
+  <td>Silently. A fire refused before a session exists leaves no row at all.</td>
+  <td><span class="pill p-dead">nobody</span></td>
+</tr>
+<tr>
+  <td><b>Local Claude tasks</b><br><span class="quiet">~/.claude/scheduled-tasks</span></td>
+  <td class="n">4</td>
+  <td>Your Mac. Needs the machine awake and a session runner.</td>
+  <td>Silently, plus it cannot run at all when the laptop is shut.</td>
+  <td><span class="pill p-dead">nobody</span></td>
+</tr>
+<tr>
+  <td><b>Cloudflare Worker crons</b></td>
+  <td class="n">9 workers<br><span class="quiet">14 schedules</span></td>
+  <td>Cloudflare edge. Reliable execution.</td>
+  <td>Returns <code>ok=true</code> while covering a fraction of the work.</td>
+  <td><span class="pill p-warn">1 of 9</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p>Plus a fourth thing that is not yours: <b>four grok.com Super Heavy bots</b> committing markdown into <code>jbmangum-inbox</code> daily. They hold no credential and never call an API, which is the cleanest trust boundary in the whole estate.</p>
+
+<div class="box blue">
+  <div class="t">The one rule you already wrote, that only one rail obeys</div>
+  <p><code>ROSTER.md</code> rule 6: <i>"Anything scheduled that does not write a job_runs row can fail indefinitely without anyone finding out."</i> You wrote that after the SEO cron returned <code>ok=true</code> for six weeks while covering 3 of 16 sites. Today <code>job_runs</code> exists in exactly one worker (<code>ascend-api</code>). The other 8 workers, all 9 routines and all 4 local tasks are outside it.</p>
+</div>
+
+<h2>2. What is broken right now</h2>
+
+<p>All verified today against live endpoints and the live trigger list, not from any document.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Thing</th><th>State</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td><b>patriot-tidy</b></td><td><span class="pill p-dead">never ran</span></td><td>Enabled since 1 Sep with a Tuesday cron. <code>list_runs</code> returns an empty array. Zero run sessions ever, including the 2 Sep fire it should have had.</td></tr>
+<tr><td><b>patriot-scouty</b></td><td><span class="pill p-dead">schedule dead</span></td><td>Three sessions, all manual tests on 1 and 3 Sep. The Thursday 4 Sep scheduled fire produced nothing.</td></tr>
+<tr><td><b>Ship Notes</b></td><td><span class="pill p-dead">never ran</span></td><td>Local task, enabled, cron <code>30 6 * * *</code>, no <code>lastRunAt</code> field at all. No <code>ship-notes/</code> directory exists in jbmangum-inbox. Post Kit has been substituting a pattern post every morning.</td></tr>
+<tr><td><b>Listy / Patchy</b></td><td><span class="pill p-warn">unproven</span></td><td>Both report <code>lastRunAt 2026-09-04T04:24:43</code>, one millisecond apart, on a Friday, for a Monday job and a Tuesday job. That is a registration timestamp, not an execution.</td></tr>
+<tr><td><b>texasdpsalerts.com</b></td><td><span class="pill p-dead">500</span></td><td><code>/api/health</code> returns HTTP 500 from the catch block, so the D1 query itself throws. Takes free signups and sells a Stripe Pro tier. Last commit 19 Feb 2026.</td></tr>
+<tr><td><b>SC DMV Alerts</b></td><td><span class="pill p-warn">green, silent</span></td><td>Live <code>/scheduler</code>: 672 appointments stored, 4 subscribers processed, <b>0 emails sent</b>, 0 errors. The skip reasons are computed and thrown away at <code>scraper-results.ts:382</code>. Every health check says this is fine.</td></tr>
+<tr><td><b>statehuntingleases.com<br>pethealthdecoder.com</b></td><td><span class="pill p-dead">not registered</span></td><td><code>whois</code> returns no match for either. Both have built repos on disk with real PRDs. The domains lapsed and nothing noticed.</td></tr>
+<tr><td><b>mangumhome.xyz</b></td><td><span class="pill p-warn">12 weeks</span></td><td>Expires 27 Nov 2026. Nothing in the estate watches renewal. Your only domain tool checks <i>availability for buying</i>.</td></tr>
+<tr><td><b>app-clt-ev</b></td><td><span class="pill p-warn">unattended</span></td><td>City of Charlotte engagement. Three crons live against D1 and R2, health endpoint returning ok. Last commit 23 Mar 2026. Its own progress.txt names a known intermittent 403 failure. Five and a half months unattended, no CLAUDE.md.</td></tr>
+<tr><td><b>Sparky</b></td><td><span class="pill p-warn">shouting into void</span></td><td>Fires cleanly daily. Its 5 Sep run correctly reported that its own rulebook's <code>synced_at</code> is 8 days stale. That observation went into a run log with no reader.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Three things that will break the headless model on contact</h3>
+
+<div class="box red">
+  <div class="t"><span class="num">1</span>No routine can push a branch</div>
+  <p><code>allowed_push_branches</code> is <code>[]</code> on all nine routines, and none has a GitHub connector. The Crown and Compass Thursday Writer is instructed to open a PR and has no mechanism to do it. Its first scheduled fire is 10 Sep. Every PR-opening agent proposed anywhere is blocked on this one field.</p>
+</div>
+
+<div class="box red">
+  <div class="t"><span class="num">2</span>Two bearer tokens are in five routine prompts, and echoed into every run transcript</div>
+  <p>Not just written in the prompt: the token appears verbatim as a literal <code>curl -H "Authorization: Bearer ..."</code> in Sparky's 5 Sep run log. Any session that can call RemoteTrigger can read both tokens without opening a prompt. Rotation today means editing five prompts plus two Cloudflare secrets by hand, with nothing checking you got them all.</p>
+</div>
+
+<div class="box red">
+  <div class="t"><span class="num">3</span>Exactly one repo a routine can clone is public</div>
+  <p><code>site-crownandcompass</code>. All three C&amp;C routines point at it for <code>brand/voice.md</code> and <code>brand/design-grammar.md</code>, and Designy is explicitly instructed to stop when it cannot read them. The day that repo goes private, three routines die at once. Everything else worth reading is already private, which is precisely why Sparky and the patriot pair were moved to HTTPS spec-serving.</p>
+</div>
+
+<h2>3. Five architectures you already built</h2>
+
+<p>This is the good news, and it is better than you probably think. You have independently invented the same system five times. Each one solved a piece the others did not.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Where</th><th>The idea it got right</th><th>The piece only it has</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>ascend-systems</b><br><span class="quiet">Sparky, Wordy, Clippy</span></td>
+  <td>Instructions served over HTTP from D1, not cloned. <code>sync-agent-docs.mjs</code> pushes repo to D1, stores the git SHA, returns <code>synced_at</code>, and <code>--check</code> exits 1 on drift.</td>
+  <td><b><code>job_runs</code></b>: coverage not success, <code>expected</code> vs <code>actual</code> always. And <b>yield</b>: approved divided by produced, per routine, in SQL. Below 20 percent the doc gets rewritten or the bot gets paused.</td>
+</tr>
+<tr>
+  <td><b>directory-machine</b><br><span class="quiet">scouty, tidy</span></td>
+  <td>Role template written once at machine level, hire terms per property. <code>GET /api/automation/spec/&lt;role&gt;</code> composes template plus roster plus access table plus brand voice at request time, from build-time imports, so an agent can never follow an edit that was never shipped.</td>
+  <td><b>Verb tiers.</b> Green reads and proposes. Yellow auto-runs but logs before and after for one-click revert. Red stages fully and a human fires the lever. Autonomy is not one dial, it grows by moving specific verbs between tiers.</td>
+</tr>
+<tr>
+  <td><b>RecordStops</b><br><span class="quiet">Listy, Patchy</span></td>
+  <td>Findings carry <code>value_now</code>, <code>value_proposed</code>, <code>source_url</code>, <code>source_quote</code>, <code>auto_eligible</code>, <code>decided_by</code>, <code>run_id</code> in one row. Better than the machine's <code>staged_changes</code>.</td>
+  <td><b>Operating limits as data.</b> <code>boss_min_age_hours=24</code> (a finding sits a day before it can auto-apply), <code>boss_runaway_pct=25</code> (stop if one run would change a quarter of the directory), <code>boss_auto_fields</code> (never NAP data). And <code>listing_checks</code>, a row per "I looked at this on this date".</td>
+</tr>
+<tr>
+  <td><b>jbmangum-inbox</b><br><span class="quiet">grok bots, Courier</span></td>
+  <td>Commit as transport. The bots hold no credential, call no API, and cannot email or post. They write a file. A GitHub Action ingests it.</td>
+  <td><b>Human triage survives re-ingest.</b> The ingest parks existing triage in a hash-keyed map, deletes children, reinserts, then restores <code>status</code>, <code>posted_at</code>, <code>skip</code>, <code>project_id</code>. Re-running does not erase your decisions.</td>
+</tr>
+<tr>
+  <td><b>Crown and Compass</b><br><span class="quiet">Monday, Thursday, Designy</span></td>
+  <td><b>No input, no output.</b> "A silent week is a correct outcome; an invented post on a ministry site is not." Plus a written constitution (<code>voice.md</code>) the routines must read before working.</td>
+  <td><b>Connector scoping that actually works.</b> Monday is Gmail <code>[send_message]</code>, Thursday <code>[search_threads, get_thread]</code>, Designy <code>[create_draft]</code>. The patriot pair run on <code>["__no_tools_required__"]</code>, a tool that does not exist.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="box green">
+  <div class="t">All five are implementations of the same three rules</div>
+  <p><b>One.</b> Instructions are served, versioned and drift-checked, never embedded in the prompt. <b>Two.</b> Agents propose, humans dispose, and the gate is a status column not a convention. <b>Three.</b> A run that cannot say what it expected cannot be checked by anything.</p>
+  <p>The PRD's job is not to invent this. It is to name it once and make the other four adopt the pieces they are missing.</p>
+</div>
+
+<h2>4. The registry problem</h2>
+
+<p><code>docs/agents/ROSTER.md</code> in ascend-systems is the best document you have about your own fleet. It opens: <i>"If this file and reality disagree, reality wins and this file is a bug."</i> It was written in August after an audit found both CLAUDE.md files claiming two deleted agents were pending migration.</p>
+
+<p>It is wrong again, in four ways:</p>
+
+<ul>
+  <li>It lists <b>Salesy</b> and <b>Tally</b> as Live with trigger ids. Both 404 against the live list. Tally's own row says it "found a silent daily failure on its first run", and then Tally itself was deleted with nothing replacing it.</li>
+  <li>Its Known Constraints section says <b>connectors cannot be scoped per routine</b>. They can, and your three newest routines already do it.</li>
+  <li>It says the <b>Gmail connector exposes create_draft, not send</b>. Blog Monday Prompt is live and sending.</li>
+  <li>It does not know the Crown and Compass trio or the patriot pair exist, because they live in other repos.</li>
+</ul>
+
+<div class="box amber">
+  <div class="t">Its own rule 5 already diagnosed this</div>
+  <p><i>"This file is regenerated from the live trigger list, not from memory... Tally exists now but does NOT regenerate this file, that is still unbuilt, so until it is, editing this by hand is the only thing keeping it true."</i></p>
+  <p>And the test it sets for itself: <b>"if it needs a human to remember it, it has already failed."</b> A hand-maintained roster has now drifted three times in three weeks. This is the thing to build first.</p>
+</div>
+
+<h2>5. Duplication, and what it costs</h2>
+
+<p>Five of the six clusters independently proposed the same four agents. A link checker appeared as Linky twice, Checky once, and Crawly as a standing proposal. A deploy-drift watcher appeared as Shippy twice, Deployy, Checky and Pulsey. Built per-project that is fifteen routines doing four jobs, each with its own token, cadence and blind spots.</p>
+
+<p>The real-world version of this already happened: the <b>X Crew</b> (Ideator, Hook Writer, Planner, Analyst, DM Manager) duplicated the grok bots so exactly that the two systems tracked the same X account and reported different follower counts, 295 against 294, on the same day. All three X Crew routines were deleted 5 Sep.</p>
+
+<div class="box amber">
+  <div class="t">Two propose-dispose engines, same author, same month, incompatible</div>
+  <p>RecordStops built <code>listing_findings</code> + <code>listing_checks</code> + <code>factory_control</code>. Directory Machine built <code>staged_changes</code> + <code>work_log</code> + verb tiers. Neither repo references the other. Directory Machine's own database map names RecordStops' three safeguards as things worth stealing, six weeks after RecordStops shipped them.</p>
+</div>
+
+<h2>6. What nobody is watching</h2>
+
+<p>Detection latency, measured from precedents in your own repos:</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Failure</th><th>How long until found</th><th>Precedent</th></tr></thead>
+<tbody>
+<tr><td>A scraper stops</td><td class="n">~3 weeks</td><td>SC DMV, Jan to Feb 2026, found by "no emails since"</td></tr>
+<tr><td>A cron errors</td><td class="n">~4.5 months</td><td>The lead scan</td></tr>
+<tr><td>A routine never fires</td><td class="n">indefinite</td><td>patriot-tidy, still undetected</td></tr>
+<tr><td>A client site 500s</td><td class="n">unknown, ongoing</td><td>texasdpsalerts.com today</td></tr>
+<tr><td>A Pages build fails</td><td class="n">never</td><td>No CI in any monorepo project except vehicle-hunt</td></tr>
+<tr><td>A domain lapses</td><td class="n">never</td><td>Two already gone</td></tr>
+<tr><td>A directory fills with junk</td><td class="n">never</td><td>No review UI on RecordStops; Access unconfigured on the machine</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="quiet">There is no monitoring product anywhere in the estate. Grepping all repos for sentry, uptimerobot, betteruptime, pagerduty, healthchecks or cronitor returns only inherited upstream files.</p>
+
+<h2>7. Two things to fix regardless of the PRD</h2>
+
+<div class="box red">
+  <div class="t">A public repo is carrying a client call transcript</div>
+  <p><code>realjbmangum/site-suitemanagerllc</code> is public. On the default branch: <code>app-suitemanager/data/Meeting Notes/transcript-clean.txt</code>, 72,135 bytes, a verbatim Suite Manager call naming Chris Rutherford and Megan Previc, plus the <code>.docx</code> and <code>.vtt</code>. The <code>.gitignore</code> rule <code>**/Meeting Notes/</code> was added 23 July, which does not untrack already-committed files. The same .gitignore has a comment acknowledging the repo is public.</p>
+</div>
+
+<div class="box red">
+  <div class="t">Patriot Directory has three live front doors, all with the write API mounted</div>
+  <p><code>patriot.directory</code>, <code>patriot-directory.pages.dev</code> and <code>site-patriot-directory1.pages.dev</code> all return 200, and all three answer <code>/api/automation/health</code> with <b>401, not 404</b>. Two separate git repos deploy against the same production database (<code>02cb1820-667a-45bf-b751-6c90e10e9906</code>), and the stale one last committed 3 March. Because Pages builds on push, a six-month-old build can redeploy against live data. The retired agent prompts still on disk point at <code>patriot.directory/api/automation/</code>, which works.</p>
+</div>
+
+<h2>8. Blocked on you, not on code</h2>
+
+<p>The Directory Machine command centre is code-complete, adversarially reviewed, and deployed dark. Every route returns 503 until two Cloudflare dashboard jobs get done, both documented step by step in <code>docs/setup-two-doors.html</code>:</p>
+
+<ol>
+  <li>Create the Access application on <code>machine.mangumhome.xyz</code> and return the team domain plus AUD tag. <b>Until this exists, no candidate can be approved by any means</b>, so the 13 candidates Scouty has already found cannot become listings.</li>
+  <li>Turn on Email Routing for patriot.directory's four aliases. Until then the deployed email worker receives nothing and the inbox to ticket to reply loop, which is the actual Phase 1 acceptance test, cannot start.</li>
+</ol>
+
+<p>Also five minutes and permanently costly to delay: <b>Google Search Console verification for patriot.directory</b>. GSC only accrues data from verification forward. Every week of delay is a permanently missing week of baseline for the Phase 2 Surveyor role.</p>
+
+<h2>9. Questions the PRD has to answer</h2>
+
+<div class="q"><div class="t">Is there one machine, or one machine per business?</div>
+Directory Machine is a generalisable engine that happens to be pointed at directories. Its role/roster/verb-tier model would work unchanged for Crown and Compass and jbmangum. Do we widen it into the estate engine, or keep three engines and only standardise the contracts between them?</div>
+
+<div class="q"><div class="t">Where does the registry live, and what regenerates it?</div>
+The live trigger list is truth for cloud routines, but it cannot see local tasks, worker crons or grok bots. Something has to hold all 26 and be regenerated, never hand-edited. That is the thing ROSTER.md rule 5 asked for and nobody built.</div>
+
+<div class="q"><div class="t">Do the local Mac tasks survive?</div>
+Four of them, two never proven to run, all dependent on the laptop being awake. Courier and Ship Notes exist only because a headless routine cannot reach wrangler or private repos. An HTTPS ingest endpoint would move both to the cloud rail. Is that the plan, or do we accept a Mac-dependent tier and just make it report?</div>
+
+<div class="q"><div class="t">What is the minimum a scheduled thing must do to be allowed to exist?</div>
+Proposal: it declares itself to the registry, it writes a run row with expected and actual, and it has a named human gate. Anything that cannot do all three does not get scheduled. That single rule kills most of what is currently broken.</div>
+
+<div class="q"><div class="t">One watcher, or none?</div>
+Tally did this and was deleted. Chiefy absorbed it and was deleted. Whatever replaces them has to be the thing that survives, which probably means it cannot be another routine that can quietly stop firing.</div>
+
+<footer>
+Sources: live <code>RemoteTrigger list</code>, live <code>list_scheduled_tasks</code>, live health endpoints, <code>whois</code>, <code>gh repo list</code>, and full reads of directory-machine, ascend-systems, site-crownandcompass, app-crownandcompass, cc-meet, jbmangum-inbox, app-jbmangum, site-jbmangum and 15 directory repos. Everything dated or quoted here was checked on 5 Sep 2026 against the running system, not against a document.
+</footer>
+
+</div>
+</body>
+</html>

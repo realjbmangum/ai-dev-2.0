@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estate I/O Map</title>
+<style>
+  :root{
+    --ink:#14161b; --ink2:#464c55; --ink3:#767d87; --ink4:#a8aeb6;
+    --bg:#f7f5f2; --card:#fff; --line:#e4e0da; --line2:#d3cec6;
+    --d1:#20527d;   --d1bg:#eef4fa;   --d1line:#b9d2e6;
+    --git:#6b3fa0;  --gitbg:#f4f0fa;  --gitline:#d6c9ec;
+    --agent:#1f6b45;--agentbg:#eef7f2;--agentline:#c2ded0;
+    --sensor:#b45309;--sensorbg:#fff7ed;--sensorline:#f0d9b8;
+    --out:#a3262b;  --outbg:#fdf2f2;  --outline:#eccccd;
+    --warn:#8a5a12; --warnbg:#fdf8ef;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1200px;margin:0 auto;padding:52px 26px 110px}
+
+  header{margin-bottom:38px}
+  .eyebrow{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink3);font-weight:700;margin-bottom:12px}
+  h1{font-size:38px;line-height:1.12;margin:0 0 12px;letter-spacing:-.03em}
+  .sub{color:var(--ink2);font-size:17px;margin:0;max-width:660px}
+
+  h2{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);
+    margin:60px 0 6px;font-weight:700}
+  h2 + .h2sub{font-size:25px;letter-spacing:-.02em;margin:0 0 18px;font-weight:600;line-height:1.25}
+  h3{font-size:17px;margin:30px 0 10px;letter-spacing:-.01em}
+  p{margin:0 0 14px}
+  code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:#efece7;padding:1.5px 5px;border-radius:3px;color:#3a3e46}
+
+  .key{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin:20px 0 8px}
+  .kk{border-radius:9px;padding:12px 14px;border:1px solid;font-size:13px}
+  .kk b{display:block;font-size:14px;margin-bottom:3px}
+  .k-agent{background:var(--agentbg);border-color:var(--agentline);color:var(--agent)}
+  .k-sensor{background:var(--sensorbg);border-color:var(--sensorline);color:var(--sensor)}
+  .k-d1{background:var(--d1bg);border-color:var(--d1line);color:var(--d1)}
+  .k-git{background:var(--gitbg);border-color:var(--gitline);color:var(--git)}
+  .k-out{background:var(--outbg);border-color:var(--outline);color:var(--out)}
+  .kk span{color:var(--ink2);display:block;margin-top:2px;line-height:1.45}
+
+  .fig{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:24px 22px;margin:20px 0 24px;overflow-x:auto}
+  .fig svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .cap{color:var(--ink3);font-size:13px;margin-top:14px;text-align:center;
+    padding-top:12px;border-top:1px solid var(--line)}
+
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0 24px;
+    border:1px solid var(--line);border-radius:10px;background:var(--card)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:900px}
+  th{text-align:left;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink3);padding:10px 12px;border-bottom:2px solid var(--line);
+    font-weight:700;background:#fbfaf8;white-space:nowrap}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+  tr:last-child td{border-bottom:none}
+  td.n{white-space:nowrap;font-variant-numeric:tabular-nums}
+  td.who b{font-size:14.5px}
+  .ent{display:block;font-size:11px;color:var(--ink3);text-transform:uppercase;
+    letter-spacing:.06em;margin-top:2px}
+  .tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;
+    padding:1.5px 6px;border-radius:3px;white-space:nowrap;margin:1px 3px 1px 0}
+  .t-d1{background:var(--d1bg);color:var(--d1);border:1px solid var(--d1line)}
+  .t-git{background:var(--gitbg);color:var(--git);border:1px solid var(--gitline)}
+  .t-web{background:#eef2f7;color:#40506a;border:1px solid #ccd6e4}
+  .t-out{background:var(--outbg);color:var(--out);border:1px solid var(--outline)}
+  .t-sen{background:var(--sensorbg);color:var(--sensor);border:1px solid var(--sensorline)}
+
+  .box{border-left:3px solid var(--line2);background:var(--card);padding:16px 19px;
+    margin:20px 0;border-radius:0 9px 9px 0}
+  .box.warn{border-left-color:var(--warn);background:var(--warnbg)}
+  .box.d1{border-left-color:var(--d1);background:var(--d1bg)}
+  .box.ok{border-left-color:var(--agent);background:var(--agentbg)}
+  .box .t{font-weight:700;margin-bottom:6px}
+  .box p:last-child{margin-bottom:0}
+
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:18px 0 26px}
+  @media (max-width:900px){.week{grid-template-columns:repeat(2,1fr)}}
+  .day{background:var(--card);border:1px solid var(--line);border-radius:9px;
+    padding:11px 10px;min-height:150px}
+  .day > b{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink3);margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .slot{display:block;font-size:12px;line-height:1.45;margin-bottom:7px}
+  .slot b{display:block;font-weight:700}
+  .slot i{font-style:normal;color:var(--ink3);font-variant-numeric:tabular-nums;font-size:11px}
+  .s-agent b{color:var(--agent)} .s-sensor b{color:var(--sensor)} .s-quiet b{color:var(--ink4)}
+
+  ul.plain{margin:0 0 16px;padding-left:20px} ul.plain li{margin-bottom:7px}
+  .quiet{color:var(--ink3);font-size:13.5px}
+  footer{margin-top:66px;padding-top:22px;border-top:1px solid var(--line);
+    color:var(--ink3);font-size:13px}
+  @media print{body{background:#fff}.wrap{padding:0}.fig,table,.box,.day,.scroll{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lighthouse 27 &middot; 6 September 2026</div>
+  <h1>Input / output map</h1>
+  <p class="sub">Every agent, every store, every tool, every schedule, and where each thing finally lands in front of a human.</p>
+</header>
+
+<div class="key">
+  <div class="kk k-agent"><b>Agent</b><span>Claude routine or Worker. Reads, thinks, proposes.</span></div>
+  <div class="kk k-sensor"><b>Sensor</b><span>grok bot. Sees x.com. Observes only, never drafts.</span></div>
+  <div class="kk k-d1"><b>D1</b><span>Cloudflare database. Machine-queried telemetry.</span></div>
+  <div class="kk k-git"><b>Git</b><span>GitHub repo. Human-written narrative and rules.</span></div>
+  <div class="kk k-out"><b>Output</b><span>Where it lands in front of a person.</span></div>
+</div>
+<p class="quiet">All times shown as Eastern, with the UTC value routines are actually configured in. Eastern is UTC minus 4 until 1 November.</p>
+
+<!-- ================= 1: THE DAY ================= -->
+<h2>One</h2>
+<div class="h2sub">The daily clock</div>
+
+<div class="fig">
+<svg viewBox="0 0 1080 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Daily timeline of agent runs">
+  <line x1="60" y1="150" x2="1030" y2="150" stroke="#d3cec6" stroke-width="2"/>
+  <g font-family="-apple-system,sans-serif" font-size="10.5" fill="#a8aeb6">
+    <line x1="60" y1="144" x2="60" y2="156" stroke="#d3cec6" stroke-width="2"/><text x="60" y="175" text-anchor="middle">00:00</text>
+    <line x1="262" y1="144" x2="262" y2="156" stroke="#d3cec6" stroke-width="2"/><text x="262" y="175" text-anchor="middle">06:00</text>
+    <line x1="464" y1="144" x2="464" y2="156" stroke="#d3cec6" stroke-width="2"/><text x="464" y="175" text-anchor="middle">09:00</text>
+    <line x1="666" y1="144" x2="666" y2="156" stroke="#d3cec6" stroke-width="2"/><text x="666" y="175" text-anchor="middle">12:00</text>
+    <line x1="868" y1="144" x2="868" y2="156" stroke="#d3cec6" stroke-width="2"/><text x="868" y="175" text-anchor="middle">18:00</text>
+    <line x1="1030" y1="144" x2="1030" y2="156" stroke="#d3cec6" stroke-width="2"/><text x="1030" y="175" text-anchor="middle">24:00</text>
+  </g>
+  <text x="60" y="196" font-family="-apple-system,sans-serif" font-size="10.5" fill="#767d87">Eastern</text>
+
+  <!-- watchy band -->
+  <rect x="60" y="120" width="970" height="16" rx="5" fill="#eef7f2" stroke="#c2ded0"/>
+  <text x="70" y="132" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#1f6b45">Watchy · every 15 minutes, all day, silent unless something is wrong</text>
+
+  <!-- sensors -->
+  <g font-family="-apple-system,sans-serif">
+    <line x1="313" y1="150" x2="313" y2="92" stroke="#b45309" stroke-width="1.4"/>
+    <circle cx="313" cy="150" r="4" fill="#b45309"/>
+    <text x="313" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#b45309">Daily Desk</text>
+    <text x="313" y="70" text-anchor="middle" font-size="10.5" fill="#767d87">07:30 · grok</text>
+
+    <line x1="330" y1="150" x2="330" y2="52" stroke="#b45309" stroke-width="1.4"/>
+    <circle cx="330" cy="150" r="4" fill="#b45309"/>
+    <text x="368" y="44" text-anchor="middle" font-size="12" font-weight="700" fill="#b45309">X Signals</text>
+    <text x="368" y="30" text-anchor="middle" font-size="10.5" fill="#767d87">07:33 · grok</text>
+
+    <line x1="347" y1="150" x2="347" y2="112" stroke="#b45309" stroke-width="1.4"/>
+    <circle cx="347" cy="150" r="4" fill="#b45309"/>
+    <text x="404" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#b45309">Build List</text>
+    <text x="404" y="92" text-anchor="middle" font-size="10.5" fill="#767d87">08:00 · grok</text>
+  </g>
+
+  <!-- ingest -->
+  <line x1="358" y1="150" x2="358" y2="196" stroke="#6b3fa0" stroke-width="1.4"/>
+  <circle cx="358" cy="150" r="4" fill="#6b3fa0"/>
+  <text x="358" y="212" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#6b3fa0">Ingest Action</text>
+  <text x="358" y="226" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#767d87">~08:05 · git to D1</text>
+
+  <!-- posty -->
+  <line x1="375" y1="150" x2="375" y2="240" stroke="#1f6b45" stroke-width="1.6"/>
+  <circle cx="375" cy="150" r="5" fill="#1f6b45"/>
+  <text x="437" y="256" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#1f6b45">Posty</text>
+  <text x="437" y="270" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#767d87">08:15 ET · 12:15 UTC</text>
+  <text x="437" y="286" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#a8aeb6">the only daily drafting role</text>
+
+  <!-- you -->
+  <line x1="430" y1="150" x2="430" y2="92" stroke="#14161b" stroke-width="1.8"/>
+  <circle cx="430" cy="150" r="5" fill="#14161b"/>
+  <text x="510" y="84" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#14161b">You open the desk</text>
+  <text x="510" y="70" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#767d87">~08:30 · five to ten minutes</text>
+
+  <!-- loggy -->
+  <line x1="1004" y1="150" x2="1004" y2="212" stroke="#1f6b45" stroke-width="1.6"/>
+  <circle cx="1004" cy="150" r="5" fill="#1f6b45"/>
+  <text x="960" y="228" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#1f6b45">Loggy</text>
+  <text x="960" y="242" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#767d87">23:00 ET · 03:00 UTC</text>
+  <text x="960" y="258" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" fill="#a8aeb6">writes the day's work log</text>
+</svg>
+<div class="cap">Sensors land first, the Action moves them into D1, Posty drafts, you empty the desk. Loggy closes the day.</div>
+</div>
+
+<div class="box warn">
+  <div class="t">The one timing dependency worth knowing about</div>
+  <p>Posty runs 15 minutes after the last grok bot commits. If grok is late, Posty drafts without that morning's signals. It does not pretend: it checks how fresh the signals are and says so in its run report, the same way Sparky already flags a stale rulebook. A thin honest morning beats an invented one.</p>
+</div>
+
+<!-- ================= 2: THE WEEK ================= -->
+<h2>Two</h2>
+<div class="h2sub">The week</div>
+
+<div class="week">
+  <div class="day"><b>Mon</b>
+    <span class="slot s-sensor"><b>Reach</b><i>09:00 · grok</i></span>
+    <span class="slot s-agent"><b>Posty</b><i>08:15</i></span>
+    <span class="slot s-agent"><b>Reachy</b><i>09:15</i></span>
+    <span class="slot s-agent"><b>Salesy</b><i>09:40</i></span>
+  </div>
+  <div class="day"><b>Tue</b>
+    <span class="slot s-agent"><b>Posty</b><i>08:15</i></span>
+    <span class="slot s-agent"><b>Tidy</b><i>11:00</i></span>
+  </div>
+  <div class="day"><b>Wed</b>
+    <span class="slot s-agent"><b>Posty</b><i>08:15</i></span>
+    <span class="slot s-agent"><b>Blogy</b><i>09:00</i></span>
+  </div>
+  <div class="day"><b>Thu</b>
+    <span class="slot s-agent"><b>Posty</b><i>08:15</i></span>
+    <span class="slot s-agent"><b>Scouty</b><i>11:00</i></span>
+    <span class="slot s-agent"><b>Salesy</b><i>09:40</i></span>
+  </div>
+  <div class="day"><b>Fri</b>
+    <span class="slot s-agent"><b>Posty</b><i>08:15</i></span>
+    <span class="slot s-quiet"><b>nothing else</b><i>on purpose</i></span>
+  </div>
+  <div class="day"><b>Sat</b>
+    <span class="slot s-agent"><b>Posty</b><i>08:15</i></span>
+    <span class="slot s-agent"><b>Wordy</b><i>09:00</i></span>
+    <span class="slot s-agent"><b>Designy</b><i>11:00</i></span>
+  </div>
+  <div class="day"><b>Sun</b>
+    <span class="slot s-quiet"><b>quiet</b><i>deliberately</i></span>
+  </div>
+</div>
+
+<p class="quiet"><b>Also running:</b> Watchy every 15 minutes. Loggy nightly at 23:00. Guidey every six weeks, keyed to the book cycle. Checky on the 1st of the month. Voicey on demand only.</p>
+
+<!-- ================= 3: THE AGENTS ================= -->
+<h2>Three</h2>
+<div class="h2sub">Every agent, in and out</div>
+
+<div class="scroll">
+<table>
+<thead><tr>
+  <th>Agent</th><th>When</th><th>Reads</th><th>Writes</th><th>Lands as</th><th>Tools</th><th>Gate</th>
+</tr></thead>
+<tbody>
+
+<tr>
+  <td class="who"><b>Watchy</b><span class="ent">estate</span></td>
+  <td class="n">every 15 min<br><span class="quiet">Worker cron</span></td>
+  <td><span class="tag t-d1">registry</span><span class="tag t-d1">agent_runs</span><span class="tag t-d1">estate_control</span></td>
+  <td><span class="tag t-d1">findings</span><span class="tag t-d1">agent_runs</span></td>
+  <td><span class="tag t-out">a push, only when something breaks</span></td>
+  <td>none</td>
+  <td>none, read only</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Loggy</b><span class="ent">estate</span></td>
+  <td class="n">23:00 ET<br>03:00 UTC</td>
+  <td><span class="tag t-d1">commits</span><span class="tag t-d1">agent_runs</span><span class="tag t-d1">findings</span></td>
+  <td><span class="tag t-git">work log, one file per project</span><span class="tag t-d1">log index</span></td>
+  <td><span class="tag t-out">the work log in git</span></td>
+  <td>estate-api</td>
+  <td>none, it records</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Voicey</b><span class="ent">estate</span></td>
+  <td class="n">on demand<br><span class="quiet">cockpit</span></td>
+  <td><span class="tag t-web">published pages</span><span class="tag t-git">existing guide fragments</span></td>
+  <td><span class="tag t-git">a draft guide, as a PR</span></td>
+  <td><span class="tag t-out">a voice guide in that entity's repo</span></td>
+  <td>WebFetch, Read</td>
+  <td>you merge the PR</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Posty</b><span class="ent">jb mangum</span></td>
+  <td class="n">daily 08:15 ET<br>12:15 UTC</td>
+  <td><span class="tag t-d1">signals</span><span class="tag t-d1">ship_events</span><span class="tag t-d1">rejections</span><span class="tag t-d1">guide: X voice</span><span class="tag t-web">news</span></td>
+  <td><span class="tag t-d1">desk drafts</span></td>
+  <td><span class="tag t-out">a row on the desk</span></td>
+  <td>WebSearch, estate-api</td>
+  <td>green only. It drafts; nothing more.</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Blogy</b><span class="ent">jb mangum</span></td>
+  <td class="n">Wed 09:00 ET<br>13:00 UTC</td>
+  <td><span class="tag t-d1">ship_events</span><span class="tag t-d1">rejections</span><span class="tag t-d1">guide: blog voice</span></td>
+  <td><span class="tag t-d1">desk draft</span><span class="tag t-git">post as a PR</span></td>
+  <td><span class="tag t-out">jbmangum.com/blog</span></td>
+  <td>estate-api</td>
+  <td>desk, then PR preview</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Reachy</b><span class="ent">jb mangum</span></td>
+  <td class="n">Mon 09:15 ET<br>13:15 UTC</td>
+  <td><span class="tag t-d1">signals from grok Reach</span></td>
+  <td><span class="tag t-d1">growth report</span><span class="tag t-d1">what worked, for Posty</span></td>
+  <td><span class="tag t-out">the Growth tab on the desk</span></td>
+  <td>estate-api</td>
+  <td>informational</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Scouty</b><span class="ent">directories</span></td>
+  <td class="n">Thu 11:00 ET<br>15:00 UTC</td>
+  <td><span class="tag t-d1">patriot /health</span><span class="tag t-d1">guide: listing tone</span><span class="tag t-web">the open web</span></td>
+  <td><span class="tag t-d1">candidates</span><span class="tag t-d1">work_log</span></td>
+  <td><span class="tag t-out">listings on patriot.directory</span></td>
+  <td>WebSearch, WebFetch, patriot API</td>
+  <td>approve lever, human click</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Tidy</b><span class="ent">directories</span></td>
+  <td class="n">Tue 11:00 ET<br>15:00 UTC</td>
+  <td><span class="tag t-d1">listings missing fields</span><span class="tag t-d1">guide: listing tone</span><span class="tag t-web">each business site</span></td>
+  <td><span class="tag t-d1">staged_changes</span><span class="tag t-d1">work_log</span></td>
+  <td><span class="tag t-out">enriched listings, live</span></td>
+  <td>WebFetch, patriot API</td>
+  <td>yellow for fills, red for the rest</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Checky</b><span class="ent">directories</span></td>
+  <td class="n">1st monthly<br>15:00 UTC</td>
+  <td><span class="tag t-d1">every listing</span><span class="tag t-web">each business site</span></td>
+  <td><span class="tag t-d1">listing_checks, every check</span><span class="tag t-d1">tickets</span></td>
+  <td><span class="tag t-out">corrections and unlist tickets</span></td>
+  <td>WebFetch, patriot API</td>
+  <td>proposes only, unlist is yours</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Wordy</b><span class="ent">crown &amp; compass</span></td>
+  <td class="n">Sat 09:00 ET<br>13:00 UTC</td>
+  <td><span class="tag t-d1">book and cycle state</span><span class="tag t-d1">guide: C&amp;C prose</span><span class="tag t-d1">rejections</span></td>
+  <td><span class="tag t-d1">desk draft</span><span class="tag t-git">post as a PR</span></td>
+  <td><span class="tag t-out">thecrownandcompass.org</span></td>
+  <td>estate-api</td>
+  <td>desk, then PR preview</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Designy</b><span class="ent">crown &amp; compass</span></td>
+  <td class="n">Sat 11:00 ET<br>15:00 UTC</td>
+  <td><span class="tag t-d1">guide: design grammar</span><span class="tag t-d1">guide: C&amp;C prose</span></td>
+  <td><span class="tag t-d1">three concepts, with prompts</span></td>
+  <td><span class="tag t-out">apparel concepts you run as prompts</span></td>
+  <td>estate-api</td>
+  <td>desk</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Guidey</b><span class="ent">crown &amp; compass</span></td>
+  <td class="n">every 6 weeks<br><span class="quiet">keyed to the cycle</span></td>
+  <td><span class="tag t-d1">the book, its source material</span><span class="tag t-d1">guide: C&amp;C prose</span></td>
+  <td><span class="tag t-d1">book_guides, status draft</span></td>
+  <td><span class="tag t-out">the six-week field guide in the app</span></td>
+  <td>estate-api, C&amp;C API</td>
+  <td>you publish in /admin</td>
+</tr>
+
+<tr>
+  <td class="who"><b>Salesy</b><span class="ent">ascend</span></td>
+  <td class="n">Mon + Thu 09:40 ET<br>13:40 UTC</td>
+  <td><span class="tag t-d1">quiet leads, narrow columns</span><span class="tag t-d1">guide: Ascend voice</span><span class="tag t-d1">rejections</span></td>
+  <td><span class="tag t-d1">outreach drafts</span><span class="tag t-d1">a pointer to the desk</span></td>
+  <td><span class="tag t-out">an email you address and send</span></td>
+  <td>ascend-api</td>
+  <td>you send. Never the agent.</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<div class="box d1">
+  <div class="t">Notice what is not in the Reads column</div>
+  <p>No agent reads git. Not one. Guides, rules and rosters reach them through <code>estate-api</code> as a served copy, because 64 of your 67 repos are private and a cloud routine cannot clone them. Git is where <i>you</i> edit those files; D1 is where agents read what shipped.</p>
+  <p>Salesy's read is also deliberately narrow: no email, no phone, no address, no deal value. It drafts the words; you attach them to a person.</p>
+</div>
+
+<!-- ================= 4: NON AGENTS ================= -->
+<h2>Four</h2>
+<div class="h2sub">The pieces that are not agents</div>
+
+<h3>Sensors, on grok</h3>
+<p>They exist for one reason: they can see x.com and nothing in Claude can. Their job narrows to observing. They never draft, never hold a voice guide, never form an opinion.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Sensor</th><th>When</th><th>Observes</th><th>Commits to</th></tr></thead>
+<tbody>
+<tr><td class="who"><b>Daily Desk</b></td><td class="n">07:30 ET</td><td>headlines, AI news, conversations happening in your feed</td><td><span class="tag t-git">jbmangum-inbox/daily-desk/</span></td></tr>
+<tr><td class="who"><b>X Signals</b><span class="ent">was Post Kit</span></td><td class="n">07:33 ET</td><td>real posts worth replying to, with permalinks. No drafts.</td><td><span class="tag t-git">jbmangum-inbox/signals/</span></td></tr>
+<tr><td class="who"><b>Build List</b></td><td class="n">08:00 ET</td><td>real asks from real business owners on X</td><td><span class="tag t-git">jbmangum-inbox/ideas/</span></td></tr>
+<tr><td class="who"><b>Reach</b></td><td class="n">Mon 09:00 ET</td><td>follower counts, per-post views, monetization bars</td><td><span class="tag t-git">jbmangum-inbox/growth/</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box ok">
+  <div class="t">How the sensors get watched without knowing it</div>
+  <p>The ingest Action posts a run report to <code>estate-api</code> every time it processes a commit. So a grok bot that stops committing produces no ingest, which produces no report, which makes Watchy flag it overdue. The sensors just commit files, exactly as they do now.</p>
+  <p>This closes the hole that killed X Crew: its last report was dated 1 September, it silently missed the 2nd, 3rd and 4th, and the only reason anyone found out was a person reading a folder.</p>
+</div>
+
+<h3>GitHub Actions, the plumbing</h3>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Action</th><th>Fires on</th><th>Does</th><th>Lives in</th></tr></thead>
+<tbody>
+<tr>
+  <td class="who"><b>Ingest</b></td><td class="n">a sensor commit</td>
+  <td>parses the file, POSTs it to estate-api as a signal, and reports the run on the sensor's behalf</td>
+  <td><span class="tag t-git">jbmangum-inbox</span></td>
+</tr>
+<tr>
+  <td class="who"><b>Sync</b></td><td class="n">merge to main</td>
+  <td>pushes changed voice guides, role templates and rosters into D1 with their git SHA, so agents read exactly what shipped</td>
+  <td><span class="tag t-git">every entity repo</span></td>
+</tr>
+<tr>
+  <td class="who"><b>Commits</b></td><td class="n">merge to main</td>
+  <td>posts commit subject, body and SHA to estate-api, so Loggy can read what happened without cloning a private repo</td>
+  <td><span class="tag t-git">every entity repo</span></td>
+</tr>
+<tr>
+  <td class="who"><b>Log writer</b></td><td class="n">estate-api asks</td>
+  <td>commits Loggy's work-log entry, so no routine ever needs push access</td>
+  <td><span class="tag t-git">every entity repo</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h3>Workers with crons, kept as-is</h3>
+<p>Real work, none of it an agent. All nine get retrofitted to report to <code>estate-api</code> so Watchy can see them.</p>
+<p class="quiet"><code>ascend-api</code> every 15 min &middot; <code>cc-reminders</code> every 15 min &middot; <code>clt-ev-worker</code> three crons &middot; <code>app-masonry-analyzer</code> every 5 min &middot; <code>jbmangum-deploy</code> hourly &middot; <code>mangum-home-api</code> five crons &middot; <code>shelf</code> every 6 hours &middot; <code>estate-api</code> itself</p>
+
+<!-- ================= 5: STORES ================= -->
+<h2>Five</h2>
+<div class="h2sub">Every store, and what only it holds</div>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Store</th><th>Kind</th><th>Holds</th><th>Written by</th><th>Read by</th></tr></thead>
+<tbody>
+<tr>
+  <td class="who"><b>estate-db</b><span class="ent">new</span></td><td><span class="tag t-d1">D1</span></td>
+  <td>registry, agent_runs, findings, estate_control, signals, ship_events, guides, roles, hires, commits</td>
+  <td>estate-api only</td><td>every agent, Watchy, the desk</td>
+</tr>
+<tr>
+  <td class="who"><b>jbmangum-desk</b></td><td><span class="tag t-d1">D1</span></td>
+  <td>the queue and your triage state. No client data, ever.</td>
+  <td>the desk Worker</td><td>you</td>
+</tr>
+<tr>
+  <td class="who"><b>ascend-db</b></td><td><span class="tag t-d1">D1</span></td>
+  <td>the CRM. Leads, invoices, clients. Ascend's own, not the estate's.</td>
+  <td>ascend-api</td><td>Salesy, narrow columns only</td>
+</tr>
+<tr>
+  <td class="who"><b>patriot_directory_db</b></td><td><span class="tag t-d1">D1</span></td>
+  <td>listings, candidates, staged changes, work log</td>
+  <td>the patriot API and the levers</td><td>Scouty, Tidy, Checky</td>
+</tr>
+<tr>
+  <td class="who"><b>crownandcompass</b></td><td><span class="tag t-d1">D1</span></td>
+  <td>members, books, guides, reading cycles, meetings</td>
+  <td>the C&amp;C app</td><td>Wordy, Guidey</td>
+</tr>
+<tr>
+  <td class="who"><b>entity repos</b></td><td><span class="tag t-git">git</span></td>
+  <td>voice guides, role templates, rosters, migrations, the work log, commit history</td>
+  <td>you, and Actions</td><td>you. Agents read the D1 copy.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ================= 6: OUTPUTS ================= -->
+<h2>Six</h2>
+<div class="h2sub">Where it all finally lands</div>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Output</th><th>Produced by</th><th>Cadence</th><th>How it gets there</th></tr></thead>
+<tbody>
+<tr><td class="who"><b>Draft X posts</b><span class="ent">on the desk</span></td><td>Posty</td><td class="n">daily</td><td>Posty writes to the desk and stops there. You copy and post, by hand, from the desk.</td></tr>
+<tr><td class="who"><b>jbmangum.com blog</b></td><td>Blogy</td><td class="n">weekly, Wed</td><td>desk, then a PR you merge, then Pages builds</td></tr>
+<tr><td class="who"><b>thecrownandcompass.org blog</b></td><td>Wordy</td><td class="n">weekly, Sat</td><td>desk, then a PR preview URL, then merge</td></tr>
+<tr><td class="who"><b>C&amp;C field guides</b></td><td>Guidey</td><td class="n">every 6 weeks</td><td>lands as a draft, you publish in /admin</td></tr>
+<tr><td class="who"><b>C&amp;C apparel concepts</b></td><td>Designy</td><td class="n">weekly, Sat</td><td>concepts plus image prompts you run yourself</td></tr>
+<tr><td class="who"><b>patriot.directory listings</b></td><td>Scouty, Tidy, Checky</td><td class="n">weekly and monthly</td><td>you click approve; the site is server-rendered so the row is the publication</td></tr>
+<tr><td class="who"><b>Ascend outreach email</b></td><td>Salesy</td><td class="n">Mon and Thu</td><td>a draft. You address it and send it.</td></tr>
+<tr><td class="who"><b>The work log</b></td><td>Loggy</td><td class="n">nightly</td><td>committed to each entity repo by an Action</td></tr>
+<tr><td class="who"><b>Voice guides</b></td><td>Voicey</td><td class="n">on demand</td><td>a PR into the entity's own repo</td></tr>
+<tr><td class="who"><b>A push notification</b></td><td>Watchy</td><td class="n">only on trouble</td><td>silence means healthy, and that is the whole contract</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box">
+  <div class="t">Nothing on this page publishes itself</div>
+  <p>Every row above ends at a human. That is the current design and it is worth being explicit about: this fleet is a very good writing and research assistant, not autonomous publishing. The path to changing that is the verb tier, one verb at a time, after months of drafts needing no edits. Not a switch you flip.</p>
+</div>
+
+<footer>
+Times are Eastern with the UTC value routines are configured in. Eastern is UTC minus 4 until 1 November, after which every UTC value here shifts by an hour and the routines will need updating, because cron has no idea what a timezone is. The live roster is <code>estate-db.registry</code>; where this page and that table disagree, the table is right.
+</footer>
+
+</div>
+</body>
+</html>
