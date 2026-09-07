@@ -153,9 +153,24 @@ One entry per listing you touched, in this shape:
 
 ```json
 {"id": 59, "name": "…", "outcome": "fill",
- "field": "email", "value_now": null, "value_proposed": "…",
+ "field": "email", "value_now": null, "value_proposed": "[recorded in the work log]",
  "source_url": "https://…", "source_quote": "the sentence you read it in"}
 ```
+
+**Never put an email address or a phone number in this report.** The estate's database
+holds no addresses, ever, by a rule with no exceptions in it. When the field you filled
+is `email` or `phone`, write `"[recorded in the work log]"` as the proposed value and
+leave it there — the real value is already in the directory's own work log with its full
+before-and-after, which is the only place it belongs and the place anyone auditing the
+change would look anyway.
+
+This happened on 7 September 2026. A run filled one listing's email and reported the
+address, which put a business's contact details into a second database it had never
+written to. Harmless in that instance and the wrong shape entirely: the same habit in a
+role that reads inbound mail would copy a private individual's address on every run.
+
+The URL and the quote still go in, in full. They are the evidence, they are public, and
+without them the entry is an assertion.
 
 `outcome` is one of:
 
