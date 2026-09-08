@@ -24,9 +24,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CHECK = process.argv.includes("--check");
 
-function sha() {
+function sha(cwd = ROOT) {
   try {
-    return execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: ROOT }).toString().trim();
+    return execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd }).toString().trim();
   } catch {
     return null;
   }
@@ -72,6 +72,41 @@ for (const entity of existsSync(entDir) ? readdirSync(entDir) : []) {
       registry_key: `${entity}:${role}`,
       role,
       terms: readFileSync(join(roster, file), "utf8"),
+    });
+  }
+}
+
+// ---- gather voice guides ----------------------------------------------------
+/*
+ * The guides live in the entity's own repository and this file is only the index.
+ *
+ * Hard rule 9 makes a guide a hard dependency of any drafting role, so a guide
+ * named in guides.json and missing from disk is a failure rather than a skip.
+ * Silently syncing four of five would mean a role shipping against no guide at
+ * all, which is the exact thing the rule exists to prevent.
+ */
+const guides = [];
+const guidesConfig = join(ROOT, "guides.json");
+if (existsSync(guidesConfig)) {
+  const cfg = JSON.parse(readFileSync(guidesConfig, "utf8"));
+  for (const g of cfg.guides ?? []) {
+    const full = join(g.root, g.path);
+    if (!existsSync(full)) {
+      console.error(
+        `Voice guide missing: ${g.entity}/${g.surface} expects ${full}\n` +
+          `A drafting role reads this, and rule 9 makes a missing guide a hard stop. ` +
+          `Fix the path in guides.json or restore the file. Refusing to sync a partial set.`
+      );
+      process.exit(1);
+    }
+    guides.push({
+      entity: g.entity,
+      surface: g.surface,
+      body: readFileSync(full, "utf8"),
+      source_repo: g.repo,
+      source_path: g.path,
+      // That repo's HEAD, never this one's. See migration 0014 for why.
+      source_sha: sha(g.root),
     });
   }
 }
@@ -139,7 +174,20 @@ for (const h of hires) {
   );
 }
 
+for (const g of guides) {
+  lines.push(
+    `INSERT INTO guides (entity, surface, body, source_repo, source_path, source_sha, synced_at)
+     VALUES (${q(g.entity)}, ${q(g.surface)}, ${q(g.body)}, ${q(g.source_repo)}, ${q(g.source_path)}, ${
+      g.source_sha ? q(g.source_sha) : "NULL"
+    }, datetime('now'))
+     ON CONFLICT(entity, surface) DO UPDATE SET body=excluded.body, source_repo=excluded.source_repo,
+       source_path=excluded.source_path, source_sha=excluded.source_sha, synced_at=excluded.synced_at;`
+  );
+}
+
 const tmp = join(mkdtempSync(join(tmpdir(), "estate-specs-")), "sync.sql");
 writeFileSync(tmp, lines.join("\n"));
 d1(["--file", tmp]);
-console.log(`synced ${roles.length} role(s), ${hires.length} hire(s) at ${commit ?? "unknown sha"}`);
+console.log(
+  `synced ${roles.length} role(s), ${hires.length} hire(s), ${guides.length} guide(s) at ${commit ?? "unknown sha"}`
+);
