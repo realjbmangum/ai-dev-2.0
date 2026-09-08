@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Which voice guide governs which surface, and where each one really lives.",
+    "",
+    "The guides stay in the entity's own repository: the people editing a brand's",
+    "voice are editing that brand, and a copy kept here would drift from the site",
+    "it governs. This file is only the index, and scripts/sync-specs.mjs reads",
+    "each path and pushes the contents to D1 so a routine with no checkout can",
+    "read it.",
+    "",
+    "path is relative to the repo root. sha is read from that repo, not this one,",
+    "so an edit to a guide shows as drift immediately rather than waiting for an",
+    "unrelated commit here."
+  ],
+  "guides": [
+    {
+      "entity": "jbmangum",
+      "surface": "blog",
+      "repo": "realjbmangum/site-jbmangum",
+      "root": "/Users/jbm/new-project/site-jbmangum",
+      "path": "voice-guide.md"
+    },
+    {
+      "entity": "jbmangum",
+      "surface": "x",
+      "repo": "realjbmangum/jbmangum-inbox",
+      "root": "/Users/jbm/jbmangum-inbox",
+      "path": "voice.md"
+    },
+    {
+      "entity": "directories",
+      "surface": "listing",
+      "repo": "realjbmangum/directory-machine",
+      "root": "/Users/jbm/directory-machine",
+      "path": "directories/patriot/voice/tone.md"
+    }
+  ]
+}
