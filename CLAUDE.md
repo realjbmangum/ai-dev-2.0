@@ -164,4 +164,7 @@ count as its own coverage number and opened a finding against itself.
 - Commit messages are public raw material. Subject is the one-sentence summary; body
   carries the wrong assumption or the thing that broke, in plain prose. No client names,
   no email addresses, no dollar amounts.
-- Log the session to `ascend-db.session_log`, project `routines-fleet`.
+- The log is the commit message. Nothing writes to `ascend-db`; retired for
+  that on 7 Sep 2026, and `ship_logs` on 29 Aug before it. Two records means
+  keeping two in agreement, which never happened. Subject is the one-sentence
+  summary; the body carries the wrong assumption or the thing that broke.
