@@ -1,0 +1,96 @@
+# Post every commit that lands on main to the estate, so the blog has something
+# to read.
+#
+# WHY AN ACTION RATHER THAN A ROUTINE. The obvious design is a daily routine that
+# sweeps the repositories, and it was the first thing tried. It needs a GitHub
+# credential held by an agent, it only sees what is there when it happens to
+# look, and every repository is private, so the credential has to be broad.
+#
+# An Action already has the access, holds no long-lived secret of its own, and
+# fires the moment a commit lands rather than up to a day later. Most of all, a
+# commit pushed while a poller is down is simply gone, and a commit nobody
+# captured cannot be recovered by any later run.
+#
+# WHAT THIS DOES NOT DO. It does not decide whether anything is worth writing
+# about. Every row arrives with publishable NULL, meaning nobody has judged it.
+# That judgement needs prose read and a view across the day, which is Loggy's
+# job. A webhook deciding what is interesting would be a webhook doing the one
+# part of this it is least able to do.
+#
+# TO ADD A REPO: copy this file to .github/workflows/ship-events.yml there,
+# change ENTITY (and PROPERTY if it is one specific site), and set the
+# ESTATE_TOKEN secret on that repository.
+
+name: ship-events
+
+on:
+  push:
+    branches: [main]
+
+# A push that arrives while the previous one is still posting should queue
+# behind it rather than race it. Commits are deduped on (repo, sha) anyway, so
+# the worst case of a race is wasted work rather than a wrong row, but ordered
+# posts make the estate's own log readable.
+concurrency:
+  group: ship-events-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    # A fork's pull request must never be able to write to the estate. Pushes to
+    # main in this repository are the only trigger, and this makes that explicit
+    # rather than relying on the trigger alone.
+    if: github.repository_owner == 'realjbmangum'
+    steps:
+      - name: Post commits to the estate
+        env:
+          ESTATE_TOKEN: ${{ secrets.ESTATE_TOKEN }}
+          # Which part of the estate this repository belongs to.
+          ENTITY: estate
+          PROPERTY: ""
+          PAYLOAD: ${{ toJSON(github.event.commits) }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ESTATE_TOKEN:-}" ]; then
+            # Loud, and not a failure. A repository that has not been given the
+            # secret yet should say so in its own log rather than turn every
+            # push red, and rather than fail silently and be discovered weeks
+            # later by an empty blog.
+            echo "::warning::ESTATE_TOKEN is not set on this repository. Commits were not recorded."
+            exit 0
+          fi
+
+          # github.event.commits already carries sha, message, url and timestamp
+          # for every commit in the push, so nothing needs to be shelled out to
+          # git. jq reshapes it into the estate's own field names.
+          BODY=$(jq -n \
+            --arg repo "$REPO" \
+            --arg entity "$ENTITY" \
+            --arg property "$PROPERTY" \
+            --argjson commits "$PAYLOAD" \
+            '{
+              repo: $repo,
+              entity: $entity,
+              property: (if $property == "" then null else $property end),
+              commits: [ $commits[] | {
+                sha: .id,
+                message: .message,
+                url: .url,
+                timestamp: .timestamp
+              } ]
+            }')
+
+          echo "Posting $(echo "$BODY" | jq '.commits | length') commit(s) from $REPO"
+
+          # --fail-with-body so a refusal shows its reason in the log instead of
+          # a bare exit code, and so a 4xx actually fails the step: a silent
+          # non-2xx here is the failure mode that empties the blog.
+          curl --fail-with-body -sS -X POST \
+            https://estate-api.bmangum1.workers.dev/api/events \
+            -H "Authorization: Bearer $ESTATE_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -d "$BODY"
+          echo
