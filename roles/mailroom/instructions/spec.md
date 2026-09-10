@@ -43,7 +43,7 @@ post, money. You never send anything in any case. See step 7.
 **2. Take the queue, oldest first.**
 
 ```
-GET  https://patriot.directory/api/automation/inbox?status=new&limit={batch}
+GET  {directory_api}/inbox?status=new&limit={batch}
 Authorization: Bearer <DIRECTORY_TOKEN>
 ```
 
@@ -192,7 +192,7 @@ with a note saying which check failed. A cell reading `none` never drops to anyt
 **Recording a confirmation is a work-log line and nothing else.**
 
 ```
-POST https://patriot.directory/api/automation/work
+POST {directory_api}/work
 Authorization: Bearer <DIRECTORY_TOKEN>
 
 {"agent":"{registry_key}","verb":"verify_listing","subject_type":"listing",
@@ -373,7 +373,7 @@ Neither is trusted, and neither can ever be `sender_verified`, so neither ever c
 existing listing. Both can propose a new one.
 
 ```
-POST https://patriot.directory/api/automation/candidates
+POST {directory_api}/candidates
 Authorization: Bearer <DIRECTORY_TOKEN>
 
 {"name":"…", "found_by":"{registry_key}",
@@ -433,7 +433,7 @@ reasoning and the tier for every other match strength. Nothing else here moves.
 If all three hold, and the field is currently **empty**:
 
 ```
-POST https://patriot.directory/api/automation/businesses
+POST {directory_api}/businesses
 {"id": <listing>, "routine": "{registry_key}", "fields": {"phone": "..."}}
 ```
 
@@ -450,7 +450,7 @@ If all three hold and the field **already has a value**, or any check fails, sta
 instead:
 
 ```
-POST https://patriot.directory/api/automation/staged-changes
+POST {directory_api}/staged-changes
 {"listing_id": <id>, "proposed_by": "{registry_key}", "origin": "owner_email",
  "inbox_id": <the message>, "changes": {"phone": "..."}, "note": "..."}
 ```
@@ -471,7 +471,7 @@ those go to a human every time, with no path to yellow.
 **6. Empty the queue. A message you handled is a message you mark.**
 
 ```
-POST https://patriot.directory/api/automation/inbox
+POST {directory_api}/inbox
 {"id": <id>, "agent": "{registry_key}", "status": "triaged", "note": "..."}
 ```
 

@@ -63,7 +63,29 @@ spec.get("/:registry_key{.+}", async (c) => {
     .replaceAll("{directory}", hire.property ?? hire.entity)
     .replaceAll("{entity}", hire.entity)
     .replaceAll("{cadence}", hire.schedule ?? "the schedule on your hire")
-    .replaceAll("{batch}", "the batch size on your hire");
+    .replaceAll("{batch}", "the batch size on your hire")
+    /*
+     * The directory's own API base, read off the hire rather than written into
+     * the template.
+     *
+     * The template had this as a literal https://patriot.directory, in six
+     * places, which was invisible while one directory existed and became the
+     * whole problem the moment a second one was hired: RecordStops' Mailroom
+     * would have been handed instructions to call Patriot's API. With separate
+     * tokens that is a 401 and a wasted run. If the tokens had ever been shared
+     * it would have been an agent triaging the wrong directory's mail and
+     * writing to the wrong directory's listings, which is the failure this
+     * whole per-hire design exists to make impossible.
+     *
+     * "one template, every hire" is the PRD's central claim about how a second
+     * directory costs nothing. A literal hostname in the template made that
+     * claim false while appearing to hold.
+     *
+     * Falls back to the property's own domain rather than to Patriot's, because
+     * a missing api block should break loudly for the hire that is missing it,
+     * never silently point somebody at a directory that does exist.
+     */
+    .replaceAll("{directory_api}", directoryApi(hire.terms, hire.property));
 
   const composed = [
     `You are \`${requested}\`. Use exactly that name in every report you write, because` +
@@ -98,3 +120,19 @@ spec.get("/:registry_key{.+}", async (c) => {
 });
 
 export default spec;
+
+/**
+ * The directory API base this hire is for, taken from its own terms.
+ *
+ * The hire carries an `api:` block whose `directory:` line is the base every
+ * call in the composed spec should use. Parsed rather than templated because
+ * the terms are markdown a person writes and reviews, and a hire that forgets
+ * the line should be obvious rather than quietly inheriting somebody else's.
+ */
+function directoryApi(terms: string, property: string | null): string {
+  const m = /^\s*directory:\s*(\S+)/m.exec(terms);
+  if (m) return m[1].replace(/\/+$/, "");
+  // No api block. Say so in the text the agent reads, rather than guessing a
+  // host: a wrong host is a run against somebody else's directory.
+  return `[NO api.directory ON THE HIRE FOR ${property ?? "this property"}, STOP AND REPORT IT]`;
+}
