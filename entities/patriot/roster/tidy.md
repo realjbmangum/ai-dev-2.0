@@ -12,8 +12,16 @@ access:
   report_run:      green
   stage_change:    yellow (empty-field fills, geo, photo) / red (owner-supplied, story)
 api:
-  directory: https://patriot-directory.pages.dev/api/automation
+  directory: https://patriot.directory/api/automation
   estate:    https://estate-api.bmangum1.workers.dev/api
+# Which voice guide governs anything this hire writes.
+#
+# Looked up by PROPERTY first, so `listing` here means this property's own
+# listing guide and never a sibling directory's. If no guide is published for
+# it, the composed spec says STOP rather than falling back, because writing in a
+# voice nobody approved ships and looks like success.
+voice:     listing
+
 notes: |
   Never invent a value. Placeholder rows exist: `US` and `USA` as a state, `Unknown` as
   a city. Those are blanks wearing a costume. Treat them as missing data, never as facts

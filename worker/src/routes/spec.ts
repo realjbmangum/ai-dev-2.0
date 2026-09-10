@@ -55,6 +55,35 @@ spec.get("/:registry_key{.+}", async (c) => {
     return c.json({ error: `no spec published for role "${hire.role}"` }, 404);
   }
 
+  /*
+   * The voice guide, looked up by PROPERTY first and entity only as a fallback.
+   *
+   * A directory's brand is its property, not its entity. The registry files both
+   * Patriot and RecordStops under entity "directories", so an entity-keyed lookup
+   * would have served RecordStops' agents Patriot's voice: "plainspoken and proud,
+   * patriotic never partisan", on a record shop directory. That is not a near miss,
+   * it is the entire brand, and it would have read as working.
+   *
+   * There is deliberately NO fallback from one property to a sibling. A missing
+   * guide is a hard stop for any role that writes, and a sibling's voice is worse
+   * than no voice, because no voice stops the run and the wrong voice ships.
+   */
+  const voiceSurface = hireValue(hire.terms, "voice");
+  const voice = voiceSurface
+    ? await c.env.DB.prepare(
+        `SELECT body, source_repo, source_path, source_sha, synced_at
+           FROM guides WHERE entity = ? AND surface = ?`
+      )
+        .bind(hire.property ?? hire.entity, voiceSurface)
+        .first<{
+          body: string;
+          source_repo: string;
+          source_path: string;
+          source_sha: string | null;
+          synced_at: string;
+        }>()
+    : null;
+
   // Fill the placeholders the template leaves for a hire to decide. A missing value
   // becomes readable prose rather than a stray brace, so a half-filled hire produces a
   // sentence an agent can act on instead of a token it will copy verbatim.
@@ -104,6 +133,7 @@ spec.get("/:registry_key{.+}", async (c) => {
     "# Access granted to this role",
     "",
     role.access ?? "_No access table published for this role. Treat that as read-only._",
+    ...voiceSection(voiceSurface, voice, hire.property ?? hire.entity),
   ].join("\n");
 
   return new Response(composed, {
@@ -130,9 +160,67 @@ export default spec;
  * the line should be obvious rather than quietly inheriting somebody else's.
  */
 function directoryApi(terms: string, property: string | null): string {
-  const m = /^\s*directory:\s*(\S+)/m.exec(terms);
-  if (m) return m[1].replace(/\/+$/, "");
+  // `m?.[1]` rather than `m[1]`: the capture group is typed as possibly absent
+  // under noUncheckedIndexedAccess, and reading it unguarded is the one line in
+  // this file that has ever failed a typecheck.
+  const found = /^\s*directory:\s*(\S+)/m.exec(terms)?.[1];
+  if (found) return found.replace(/\/+$/, "");
   // No api block. Say so in the text the agent reads, rather than guessing a
   // host: a wrong host is a run against somebody else's directory.
   return `[NO api.directory ON THE HIRE FOR ${property ?? "this property"}, STOP AND REPORT IT]`;
+}
+
+/**
+ * Pull a `key: value` line out of a hire's terms.
+ *
+ * The terms are markdown a person writes and reviews, so this reads them the way
+ * a person wrote them rather than demanding a parser-friendly format. A hire that
+ * omits the line gets null and the caller decides what that means, which is the
+ * only way a missing declaration can be made loud instead of defaulted away.
+ */
+function hireValue(terms: string, key: string): string | null {
+  const found = new RegExp(`^\\s*${key}:\\s*(\\S+)`, "m").exec(terms)?.[1];
+  return found ? found.trim() : null;
+}
+
+/**
+ * The voice section, or the reason there isn't one.
+ *
+ * Three cases, and the third is the one that matters. A hire declaring no voice
+ * gets no section, which is right for a role that only reads. A hire declaring a
+ * surface that exists gets the guide. A hire declaring a surface with no guide
+ * behind it gets an instruction to stop, in the spec itself, because an agent
+ * that writes against no guide looks identical to one writing against a good one
+ * right up until a person reads what it published.
+ */
+function voiceSection(
+  surface: string | null,
+  guide: { body: string; source_repo: string; source_path: string; source_sha: string | null } | null,
+  brand: string
+): string[] {
+  if (!surface) return [];
+  if (!guide) {
+    return [
+      "",
+      "---",
+      "",
+      "# Voice",
+      "",
+      `STOP. Your hire declares \`voice: ${surface}\`, and no ${surface} guide is` +
+        ` published for \`${brand}\`. Do not draft, enrich, or publish any text on this` +
+        ` run. Report the run as failed with this as the reason, and exit. Writing in a` +
+        ` voice nobody approved is worse than writing nothing, and a sibling property's` +
+        ` guide is not a substitute.`,
+    ];
+  }
+  return [
+    "",
+    "---",
+    "",
+    `# Voice — ${brand}, ${surface}`,
+    "",
+    `Source: \`${guide.source_repo}/${guide.source_path}\` at ${guide.source_sha ?? "unknown sha"}.`,
+    "",
+    guide.body,
+  ];
 }

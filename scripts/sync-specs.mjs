@@ -141,12 +141,56 @@ if (CHECK) {
     else if (rem.terms !== h.terms) drift.push(`hire ${h.registry_key}: terms differ`);
   }
 
+  /*
+   * A hire with no registry row is the failure this check exists to catch.
+   *
+   * The spec endpoint joins hires to registry, so a hire that syncs cleanly but
+   * has no registry row answers "no hire registered for X" - naming the one
+   * thing that plainly IS there. Nothing else in the system says which half is
+   * missing, and the first symptom is a routine 404ing on its own name.
+   *
+   * It is also the first law: nothing runs unless it is in the registry.
+   */
+  const registered = new Set(d1(["--json", "--command", "SELECT key FROM registry;"]).map((r) => r.key));
+  for (const h of hires) {
+    if (!registered.has(h.registry_key)) {
+      drift.push(
+        `hire ${h.registry_key}: no registry row, so its spec 404s. Insert the registry row first.`
+      );
+    }
+  }
+
+  /*
+   * Guides drift the same way specs do, and were not being checked at all.
+   * A guide is the only thing standing between a drafting role and inventing a
+   * voice, so an unnoticed stale copy is the expensive kind of stale.
+   */
+  const remoteGuides = new Map(
+    d1(["--json", "--command", "SELECT entity, surface, body FROM guides;"]).map((r) => [
+      `${r.entity}/${r.surface}`,
+      r,
+    ])
+  );
+  for (const g of guides) {
+    const rem = remoteGuides.get(`${g.entity}/${g.surface}`);
+    if (!rem) drift.push(`guide ${g.entity}/${g.surface}: missing from D1`);
+    else if (rem.body !== g.body) drift.push(`guide ${g.entity}/${g.surface}: body differs`);
+  }
+  for (const key of remoteGuides.keys()) {
+    if (!guides.some((g) => `${g.entity}/${g.surface}` === key)) {
+      drift.push(
+        `guide ${key}: in D1 but not in guides.json. Agents can still be served it. ` +
+          `Delete it by hand if that is intentional.`
+      );
+    }
+  }
+
   if (drift.length) {
     console.error("SPECS OUT OF SYNC. Agents are reading these, not the repo:\n");
     for (const d of drift) console.error("  " + d);
     process.exit(1);
   }
-  console.log(`in sync: ${roles.length} role(s), ${hires.length} hire(s)`);
+  console.log(`in sync: ${roles.length} role(s), ${hires.length} hire(s), ${guides.length} guide(s)`);
   process.exit(0);
 }
 
