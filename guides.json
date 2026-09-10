@@ -23,9 +23,27 @@
     "is the whole brand. So directories register under their property key, and",
     "spec composition looks up by property before entity. There is deliberately no",
     "fallback from one property to another: a missing guide is a hard stop, and a",
-    "sibling's voice is worse than no voice."
+    "sibling's voice is worse than no voice.",
+    "",
+    "THE OTHER HALF OF THAT RULE, WHICH BITES THE ENTITIES THAT ARE NOT",
+    "DIRECTORIES. Crown and Compass registers under its ENTITY key, because it has",
+    "no separate property: the ministry and the brand are the same thing. That is",
+    "correct only for as long as its hires carry `property: null`. Give a Crown and",
+    "Compass hire a property value and the lookup in spec.ts moves to that key,",
+    "finds nothing there, and composes a STOP block instead of a voice. The role",
+    "then reports a missing guide that is sitting right here in this file, which is",
+    "the sort of failure somebody spends an afternoon on. So: if a Crown and",
+    "Compass property is ever real enough to need its own hire, register its guide",
+    "under the property key at the same time, in the same commit."
   ],
   "guides": [
+    {
+      "entity": "crownandcompass",
+      "surface": "blog",
+      "repo": "realjbmangum/site-crownandcompass",
+      "root": "/Users/jbm/new-project/site-crownandcompass",
+      "path": "brand/voice.md"
+    },
     {
       "entity": "jbmangum",
       "surface": "blog",

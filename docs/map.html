@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Estate: map of agents, properties and databases</title>
+<style>
+  :root{
+    --ink:#16181d; --mute:#6b7280; --line:#e2e5ea; --bg:#fbfbfc; --panel:#fff;
+    --green:#0f7a4d; --greenbg:#e8f5ee;
+    --yellow:#8a6100; --yellowbg:#fdf3dd;
+    --red:#a3211c;   --redbg:#fbeceb;
+    --grey:#5b6472;  --greybg:#eef0f3;
+    --blue:#1a4f8a;  --bluebg:#e9f0f8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1320px;margin:0 auto;padding:38px 22px 90px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:8px}
+  h1{font-size:27px;margin:0 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--mute);font-size:14px;margin:0}
+  .stamp{margin-top:14px;background:var(--panel);border:1px solid var(--line);
+    border-left:3px solid var(--blue);padding:11px 14px;font-size:13px;color:var(--mute);border-radius:0 4px 4px 0}
+  .stamp b{color:var(--ink)}
+  h2{font-size:19px;margin:44px 0 4px;letter-spacing:-.01em}
+  h2 .n{color:var(--mute);font-weight:400;font-size:15px;margin-right:8px}
+  .lede{color:var(--mute);font-size:14px;margin:0 0 14px;max-width:82ch}
+  .lede code{color:var(--ink)}
+  table{width:100%;border-collapse:collapse;background:var(--panel);
+    border:1px solid var(--line);font-size:13px;margin-bottom:6px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--mute);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--line);
+    background:#f7f8f9;white-space:nowrap;position:sticky;top:0;z-index:2}
+  th[data-sort]{cursor:pointer;user-select:none;padding-right:20px;position:sticky}
+  th[data-sort]:hover{color:var(--ink);background:#eef0f3}
+  th[data-sort]::after{content:"\2195";position:absolute;right:7px;opacity:.28;font-size:11px}
+  th[data-sort].asc::after{content:"\2191";opacity:1;color:var(--blue)}
+  th[data-sort].desc::after{content:"\2193";opacity:1;color:var(--blue)}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#fafbfc}
+  td.nm{font-weight:600;white-space:nowrap}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+  .tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:10.5px;
+    font-weight:600;letter-spacing:.02em;white-space:nowrap}
+  .t-live{background:var(--greenbg);color:var(--green)}
+  .t-hired{background:var(--bluebg);color:var(--blue)}
+  .t-plan{background:var(--greybg);color:var(--grey)}
+  .t-old{background:var(--yellowbg);color:var(--yellow)}
+  .w{color:var(--red);font-weight:600}
+  .r{color:var(--mute)}
+  .none{color:var(--mute);font-style:italic}
+  .flag{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--red);
+    padding:13px 16px;margin-bottom:10px;border-radius:0 4px 4px 0}
+  .flag.warn{border-left-color:var(--yellow)}
+  .flag.ok{border-left-color:var(--green)}
+  .flag h3{margin:0 0 5px;font-size:14.5px}
+  .flag p{margin:0;font-size:13.5px;color:#3a4048}
+  .flag p+p{margin-top:7px}
+  .scroll{overflow-x:auto;max-height:none}
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:13px;color:var(--mute)}
+  .legend{margin:10px 0 0;font-size:12.5px;color:var(--mute)}
+  .legend .tag{margin-right:4px}
+  .hint{font-size:12px;color:var(--mute);margin:0 0 10px}
+  .flow{background:var(--panel);border:1px solid var(--line);padding:18px 20px;
+    border-radius:4px;margin-bottom:14px;overflow-x:auto}
+  .flow pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px;line-height:1.75;color:var(--ink)}
+  .flow b{color:var(--blue)}
+  @media (max-width:720px){ .wrap{padding:24px 14px 60px} table{font-size:12px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>The Estate</h1>
+  <p class="sub">Every agent, worker, property and database, with what it reads, what it writes, and where to find it.</p>
+</header>
+
+<div class="stamp">
+  <b>Snapshot taken 10 September 2026.</b> Verified against live sources, not against documentation:
+  the routine list from the Claude API, <code>registry</code> from <code>estate-db</code>,
+  <code>wrangler d1 list</code>, and a sweep of every <code>wrangler.toml</code> on disk.
+  A status with no date beside it is not a fact, so this page carries one. It is hand-assembled today
+  and should be generated; see the note at the bottom.
+</div>
+
+<h2><span class="n">1</span>Naming</h2>
+<p class="lede">One scheme, used everywhere from here on. Every agent and worker is
+<code>&lt;owner&gt;:&lt;role&gt;</code>, where the owner is the <b>property</b> when a thing serves exactly
+one, and the <b>entity</b> when it serves several or none. So Patriot's finder is
+<code>patriot:scouty</code> and RecordStops' is <code>recordstops:scouty</code>, never
+<code>patriot-scouty</code> and never a bare <code>Scouty</code>. That key is the registry primary key,
+the URL of its instructions, and the name it must use in every report it writes. Anything running under
+a different name is unregistered, which is a defect rather than a style.</p>
+
+<h2><span class="n">2</span>The fleet</h2>
+<p class="hint">Click any column heading to sort. Click again to reverse.</p>
+<p class="lede"><b>Room</b> is where it executes: <i>field</i> is a scheduled cloud routine,
+<i>worker</i> is a Cloudflare Worker, <i>cockpit</i> is a session on the Mac. Times are UTC.
+<b>Where to look</b> is where its state surfaces, either an estate endpoint or a page on the desk at
+app.jbmangum.com.</p>
+
+<div class="scroll">
+<table id="fleet">
+<thead>
+<tr>
+  <th data-sort="text">Key</th>
+  <th data-sort="text">Owner</th>
+  <th data-sort="text">Runs</th>
+  <th data-sort="text">Room</th>
+  <th data-sort="text">What it does</th>
+  <th data-sort="text">Reads</th>
+  <th data-sort="text">Writes</th>
+  <th data-sort="text">Where to look</th>
+  <th data-sort="text">Status</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+  <td class="nm mono">estate:watchy</td><td>estate</td><td class="mono">every 15 min</td><td>worker</td>
+  <td>Reconciles the registry against what is actually live. Flags anything overdue, unregistered or vanished. Silent unless there is trouble.</td>
+  <td class="r">estate-db <code>registry</code></td>
+  <td class="r">estate-db <code>registry.last_seen_at</code>, <code>agent_runs</code></td>
+  <td class="mono r">/api/registry<br>/api/runs?unhealthy=true</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+<tr>
+  <td class="nm mono">estate:loggy</td><td>estate</td><td class="mono">daily 13:10</td><td>field</td>
+  <td>Judges the day's commits and decides which are worth telling anyone about.</td>
+  <td class="r">estate-db <code>ship_events</code></td>
+  <td class="r">estate-db <code>ship_events</code> verdict, <code>agent_runs</code></td>
+  <td class="mono r">/api/events<br>desk: Ships</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+<tr>
+  <td class="nm mono">estate:voicey</td><td>estate</td><td class="mono">on demand</td><td>cockpit</td>
+  <td>Drafts a missing brand voice guide from work that has actually published. You approve the PR.</td>
+  <td class="r">published pages, existing guides</td>
+  <td class="none">nothing automatically</td>
+  <td class="mono r">/api/guides</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+
+<tr>
+  <td class="nm mono">directories:email-intake</td><td>directories</td>
+  <td class="mono">on each message</td><td>worker</td>
+  <td><b>This is what fills the Inbox page.</b> Cloudflare pushes every inbound message to it. It picks the directory by recipient domain, checks authentication, classifies, and files a row.</td>
+  <td class="r">the message itself</td>
+  <td class="r">patriot_directory_db or recordstops-db <code>inbox</code>; R2 attachments</td>
+  <td class="mono r">desk: Inbox</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+<tr>
+  <td class="nm mono">directories:mail-events</td><td>directories</td>
+  <td class="mono">on each event</td><td>worker</td>
+  <td>The return path for mail we send. Consumes the delivery-event queue so a bounce three days later lands on the row that caused it.</td>
+  <td class="r">the <code>mail-events</code> queue</td>
+  <td class="r">patriot_directory_db or recordstops-db <code>outbox</code> status, <code>suppression</code></td>
+  <td class="mono r">desk: Inbox</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+
+<tr>
+  <td class="nm mono">patriot:mailroom</td><td>patriot</td><td class="mono">daily 16:10</td><td>field</td>
+  <td>Reads mail strangers sent to the directory and turns it into typed work. Never replies, never sends, never removes a listing.</td>
+  <td class="r">patriot_directory_db <code>inbox</code>, <code>businesses</code></td>
+  <td class="r"><code>work_log</code>, <code>tickets</code>, <code>candidates</code>, <code>staged_changes</code>; <code>businesses</code> only to fill an empty field for a verified sender. estate-db <code>agent_runs</code></td>
+  <td class="mono r">desk: Inbox<br>/api/spec/patriot:mailroom</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+<tr>
+  <td class="nm mono">patriot:tidy</td><td>patriot</td><td class="mono">Tue 15:00</td><td>field</td>
+  <td>Enriches listings that already exist. Fills gaps, refreshes dead photos. Never decides what is listed.</td>
+  <td class="r">patriot_directory_db <code>businesses</code></td>
+  <td class="r"><code>work_log</code>, <code>tickets</code>, <code>staged_changes</code>. estate-db <code>agent_runs</code></td>
+  <td class="mono r">desk: Estate<br>/api/spec/patriot:tidy</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+<tr>
+  <td class="nm mono">patriot:scouty</td><td>patriot</td><td class="mono">Thu 15:00</td><td>field</td>
+  <td>Finds American businesses that belong on Patriot and proposes them. Never publishes.</td>
+  <td class="r">the open web</td>
+  <td class="r">patriot_directory_db <code>candidates</code></td>
+  <td class="mono r">desk: Estate</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+<tr>
+  <td class="nm mono">patriot:checky</td><td>patriot</td><td class="mono">not scheduled</td><td>field</td>
+  <td>Monthly check that listed businesses still exist and still say what we say they say.</td>
+  <td class="none">none</td><td class="none">none</td>
+  <td class="mono r">/api/registry</td>
+  <td><span class="tag t-plan">not built</span></td>
+</tr>
+
+<tr>
+  <td class="nm mono">recordstops:mailroom</td><td>recordstops</td><td class="mono">daily 16:25</td><td>field</td>
+  <td>Same job as Patriot's, on the record shop directory, in RecordStops' own voice.</td>
+  <td class="r">recordstops-db <code>inbox</code>, <code>stores</code></td>
+  <td class="r"><code>work_log</code>, <code>tickets</code>, <code>candidates</code>, <code>staged_changes</code>; <code>stores</code> only to fill an empty field for a verified sender. estate-db <code>agent_runs</code></td>
+  <td class="mono r">desk: Inbox<br>/api/spec/recordstops:mailroom</td>
+  <td><span class="tag t-hired">hired, no routine</span></td>
+</tr>
+<tr>
+  <td class="nm mono">recordstops:tidy</td><td>recordstops</td><td class="mono">Wed 15:00</td><td>field</td>
+  <td>Enriches record shop listings, email first: only 18 of 67 shops have an address on file, and an address is what lets a shop correct itself.</td>
+  <td class="r">recordstops-db <code>stores</code></td>
+  <td class="r"><code>work_log</code>, <code>tickets</code>, <code>staged_changes</code>. estate-db <code>agent_runs</code></td>
+  <td class="mono r">desk: Estate<br>/api/spec/recordstops:tidy</td>
+  <td><span class="tag t-hired">hired, no routine</span></td>
+</tr>
+<tr>
+  <td class="nm mono">recordstops:scouty</td><td>recordstops</td><td class="mono">not scheduled</td><td>field</td>
+  <td>The same finder as Patriot's, for record shops. Not hired yet.</td>
+  <td class="none">none</td><td class="none">none</td>
+  <td class="mono r">/api/registry</td>
+  <td><span class="tag t-plan">not built</span></td>
+</tr>
+
+<tr>
+  <td class="nm mono">jbmangum:blogy</td><td>jbmangum</td><td class="mono">Sat 13:00</td><td>field</td>
+  <td>One blog post a week, built only from what actually shipped. Always lands at needs_review; never publishes.</td>
+  <td class="r">estate-db <code>ship_events</code>, <code>drafts</code> rejections</td>
+  <td class="r">estate-db <code>drafts</code>, marks events consumed, <code>agent_runs</code></td>
+  <td class="mono r">/api/drafts<br>desk: Ideas</td>
+  <td><span class="tag t-live">live</span></td>
+</tr>
+<tr>
+  <td class="nm mono">jbmangum:posty</td><td>jbmangum</td><td class="mono">not scheduled</td><td>field</td>
+  <td>Daily X originals and replies, drafted from shipped work. Merges the two old grok bots into one.</td>
+  <td class="none">none</td><td class="none">none</td>
+  <td class="mono r">/api/registry</td>
+  <td><span class="tag t-plan">not built</span></td>
+</tr>
+<tr>
+  <td class="nm mono">jbmangum:reachy</td><td>jbmangum</td><td class="mono">not scheduled</td><td>field</td>
+  <td>Weekly X metrics. Renders unknown as unknown, never as zero.</td>
+  <td class="none">none</td><td class="none">none</td>
+  <td class="mono r">/api/registry</td>
+  <td><span class="tag t-plan">not built</span></td>
+</tr>
+
+<tr>
+  <td class="nm mono">crownandcompass:prompty</td><td>crownandcompass</td><td class="mono">Mon 12:00</td><td>field</td>
+  <td>Interviews you. Sends five prompts you can answer from your phone in five minutes. Writes no posts. Live as "Blog - Monday Prompt".</td>
+  <td class="none">nothing</td>
+  <td class="r">one Gmail message to you, and nothing else</td>
+  <td class="none">nowhere yet</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+<tr>
+  <td class="nm mono">crownandcompass:wordy</td><td>crownandcompass</td><td class="mono">Thu 13:00</td><td>field</td>
+  <td>Writes one post from your actual answers. If you barely answered, it writes nothing rather than padding. Live as "Blog - Thursday Writer".</td>
+  <td class="r">the Gmail thread, <code>site-crownandcompass</code> brand files</td>
+  <td class="r">a branch and a pull request. Never pushes to main. No database.</td>
+  <td class="none">nowhere yet</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+<tr>
+  <td class="nm mono">crownandcompass:designy</td><td>crownandcompass</td><td class="mono">Sat 15:00</td><td>field</td>
+  <td>Three apparel concepts a week, as concepts and image prompts.</td>
+  <td class="r">brand files from GitHub</td>
+  <td class="r">a Gmail draft, and nothing else</td>
+  <td class="none">nowhere yet</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+<tr>
+  <td class="nm mono">crownandcompass:guidey</td><td>crownandcompass</td><td class="mono">not scheduled</td><td>field</td>
+  <td>Field guides for the six-week book cycle.</td>
+  <td class="none">none</td><td class="none">none</td>
+  <td class="mono r">/api/registry</td>
+  <td><span class="tag t-plan">not built</span></td>
+</tr>
+<tr>
+  <td class="nm mono">crownandcompass:reminders</td><td>crownandcompass</td><td class="mono">every 15 min</td><td>worker</td>
+  <td>Reading reminders for the current book cycle. Live as <code>cc-reminders</code>.</td>
+  <td class="r">crownandcompass</td>
+  <td class="r">crownandcompass</td>
+  <td class="none">nowhere yet</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+
+<tr>
+  <td class="nm mono">ascend:sparky</td><td>ascend</td><td class="mono">daily 14:15</td><td>field</td>
+  <td>Triages new sparks into categories.</td>
+  <td class="r">ascend-db <code>sparks</code></td>
+  <td class="w">ascend-db <code>sparks</code></td>
+  <td class="mono r">admin.ascendsystems.ai</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+<tr>
+  <td class="nm mono">ascend:wordy</td><td>ascend</td><td class="mono">Sat 13:00</td><td>field</td>
+  <td>Weekly content drafting across three brands in one routine. Live as "Wordy".</td>
+  <td class="r">ascend-db <code>sparks</code>, <span class="w"><code>session_log</code> retired 7 Sep, now always empty</span></td>
+  <td class="w">ascend-db <code>content_drafts</code></td>
+  <td class="mono r">admin.ascendsystems.ai</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+<tr>
+  <td class="nm mono">ascend:clippy</td><td>ascend</td><td class="mono">Sat 14:30</td><td>field</td>
+  <td>Cuts social clips from posts that already published.</td>
+  <td class="r">ascend-db <code>content_drafts</code></td>
+  <td class="w">ascend-db <code>content_drafts</code>, <code>clips</code></td>
+  <td class="mono r">admin.ascendsystems.ai</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+<tr>
+  <td class="nm mono">ascend:salesy</td><td>ascend</td><td class="mono">not scheduled</td><td>field</td>
+  <td>Lead follow-up drafts. Designed pointer-only into the desk so no client data crosses.</td>
+  <td class="none">none</td><td class="none">none</td>
+  <td class="mono r">/api/registry</td>
+  <td><span class="tag t-plan">not built</span></td>
+</tr>
+<tr>
+  <td class="nm mono">ascend:api-cron</td><td>ascend</td><td class="mono">every 15 min</td><td>worker</td>
+  <td>The CRM's own background jobs: SEO metrics, Stripe reconciliation. Live as <code>ascend-api</code>.</td>
+  <td class="r">ascend-db</td>
+  <td class="w">ascend-db <code>job_runs</code>, <code>seo_metrics</code>, <code>clients</code>, <code>invoices</code></td>
+  <td class="mono r">admin.ascendsystems.ai</td>
+  <td><span class="tag t-old">runs unregistered</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="legend">
+  <span class="tag t-live">live</span> running and registered &nbsp;
+  <span class="tag t-hired">hired, no routine</span> registered with a token, nothing fires it yet &nbsp;
+  <span class="tag t-old">runs unregistered</span> running, but the estate does not know it exists, so nothing reports whether it ran &nbsp;
+  <span class="tag t-plan">not built</span>
+</p>
+
+<h2><span class="n">3</span>How mail actually moves</h2>
+<p class="lede">Nothing polls for mail. Cloudflare pushes each message into a Worker the moment it
+arrives, which is why neither email worker has a schedule and why they were easy to miss.</p>
+
+<div class="flow">
+<pre>
+INBOUND, what fills the Inbox page
+
+  someone emails hello@patriot.directory  or  hello@recordstops.com
+        |
+        v
+  Cloudflare <b>Email Routing</b> rule on that domain
+        |
+        v
+  Worker <b>machine-email-intake</b>   (directories:email-intake)
+    picks the database by recipient domain, checks SPF/DKIM/DMARC,
+    detects auto-replies and opt-outs, matches a reply to the message
+    that caused it, then writes one row
+        |
+        v
+  <b>inbox</b> table in patriot_directory_db  or  recordstops-db
+        |
+        +---> the desk reads it at /api/inbox  ->  <b>Inbox page</b>
+        |
+        +---> the Mailroom reads it at /api/automation/inbox?status=new
+              and turns each message into typed work
+
+OUTBOUND, and how a bounce finds its way home
+
+  the desk fires a lever  ->  outbox row claimed  ->  Cloudflare Email Service
+        |
+        v
+  Email Service publishes a delivery event to the <b>mail-events</b> queue
+        |
+        v
+  Worker <b>machine-mail-events</b>   (directories:mail-events)
+    sole consumer, batches of 10, three tries then a dead letter queue
+        |
+        v
+  <b>outbox</b> status moves to delivered or bounced, and a hard bounce
+  adds the address to <b>suppression</b> so nothing mails it again
+</pre>
+</div>
+<p class="lede">One Worker serves both directories in each direction. That is deliberate: the routing
+table is data, the brand separation is the database it selects, and a second Worker per directory would
+be two copies of the same parser drifting apart. The agents are per property; the plumbing is not.</p>
+
+<h2><span class="n">4</span>Properties and their databases</h2>
+<p class="hint">Click any column heading to sort.</p>
+
+<div class="scroll">
+<table id="props">
+<thead>
+<tr>
+  <th data-sort="text">Property</th><th data-sort="text">Public domain</th>
+  <th data-sort="text">Cloudflare project</th><th data-sort="text">Database</th>
+  <th data-sort="text">Agent API</th><th data-sort="text">Mail in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="nm">Patriot</td><td class="mono">patriot.directory</td>
+  <td class="mono">patriot-directory <span class="r">(Pages)</span></td>
+  <td class="mono">patriot_directory_db</td>
+  <td class="mono">/api/automation<br>/api/levers</td>
+  <td class="mono">hello@patriot.directory</td>
+</tr>
+<tr>
+  <td class="nm">RecordStops</td><td class="mono">recordstops.com</td>
+  <td class="mono">site-recordstore-directory <span class="r">(Pages)</span></td>
+  <td class="mono">recordstops-db</td>
+  <td class="mono">/api/automation<br>/api/levers <span class="r">(ported, not deployed)</span></td>
+  <td class="mono">hello@recordstops.com</td>
+</tr>
+<tr>
+  <td class="nm">The Desk</td><td class="mono">app.jbmangum.com</td>
+  <td class="mono">app-jbmangum <span class="r">(Worker)</span></td>
+  <td class="mono">jbmangum-desk<br>+ estate-db <span class="r">(read)</span></td>
+  <td class="r">it is the client, not a server</td><td class="none">none</td>
+</tr>
+<tr>
+  <td class="nm">The Estate</td><td class="mono">estate-api.bmangum1.workers.dev</td>
+  <td class="mono">estate-api <span class="r">(Worker)</span></td>
+  <td class="mono">estate-db</td>
+  <td class="mono">/api/registry, /api/runs, /api/spec,<br>/api/events, /api/guides, /api/drafts</td><td class="none">none</td>
+</tr>
+<tr>
+  <td class="nm">Ascend Systems</td><td class="mono">admin.ascendsystems.ai</td>
+  <td class="mono">ascend-api <span class="r">(Worker)</span></td>
+  <td class="mono">ascend-db</td>
+  <td class="mono">/api/automation</td><td class="none">none</td>
+</tr>
+<tr>
+  <td class="nm">Crown and Compass</td><td class="mono">thecrownandcompass.org</td>
+  <td class="mono">site-crownandcompass<br>app-crownandcompass</td>
+  <td class="mono">crownandcompass</td>
+  <td class="none">none</td><td class="none">none</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="n">5</span>Everything on a Cloudflare schedule</h2>
+<p class="hint">Click any column heading to sort. The two email workers are absent from this table on
+purpose: they are event-driven, not scheduled.</p>
+
+<div class="scroll">
+<table id="crons">
+<thead>
+<tr><th data-sort="text">Worker</th><th data-sort="text">Cron (UTC)</th><th data-sort="text">Database</th><th data-sort="text">What it does</th></tr>
+</thead>
+<tbody>
+<tr><td class="nm mono">estate-api</td><td class="mono">*/15 * * * *</td><td class="mono">estate-db</td><td>Watchy's reconciliation sweep</td></tr>
+<tr><td class="nm mono">ascend-api</td><td class="mono">*/15 * * * *</td><td class="mono">ascend-db, voice-c00</td><td>Ascend CRM background jobs, SEO metrics, Stripe reconciliation</td></tr>
+<tr><td class="nm mono">cc-reminders</td><td class="mono">*/15 * * * *</td><td class="mono">crownandcompass</td><td>Reading reminders</td></tr>
+<tr><td class="nm mono">mangum-home-api</td><td class="mono">5 crons</td><td class="mono">mangum-home</td><td>Family hub background jobs</td></tr>
+<tr><td class="nm mono">clt-ev-worker</td><td class="mono">3 crons</td><td class="mono">clt-ev-db</td><td>Charlotte EV charging data</td></tr>
+<tr><td class="nm mono">app-masonry-analyzer</td><td class="mono">*/5 * * * *</td><td class="mono">contract-review-db</td><td>Contract analysis queue</td></tr>
+<tr><td class="nm mono">scdmv-scraper</td><td class="mono">0 * * * *</td><td class="none">none</td><td>SC DMV appointment scraper</td></tr>
+<tr><td class="nm mono">txdps-scraper</td><td class="mono">*/30 * * * *</td><td class="none">none</td><td>TX DPS appointment scraper</td></tr>
+<tr><td class="nm mono">jbmangum-deploy</td><td class="mono">0 * * * *</td><td class="none">none</td><td>Substack deploy hook</td></tr>
+<tr><td class="nm mono">shelf</td><td class="mono">0 */6 * * *</td><td class="mono">shelf-db</td><td>Shelf sync</td></tr>
+<tr><td class="nm mono">recordstops-sync</td><td class="mono">0 6 * * *</td><td class="mono">recordstops-db</td><td>Release sync</td></tr>
+<tr><td class="nm mono">recordstops-musicbrainz</td><td class="mono">0 7 * * *</td><td class="mono">recordstops-db</td><td>MusicBrainz enrichment</td></tr>
+<tr><td class="nm mono w">recordstops-newsletter</td><td class="mono w">0 13 * * SAT</td><td class="mono">recordstops-db</td><td class="w">Source deleted today, still deployed and still scheduled. See flag 1.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="n">6</span>What is wrong right now</h2>
+<p class="lede">Findings from this sweep, worst first. Everything here was verified against a live
+system today, not inferred from a document.</p>
+
+<div class="flag">
+  <h3>1. A retired worker is still deployed and still on a cron</h3>
+  <p><code>recordstops-newsletter</code> was removed from the repo today, which undeployed nothing. It
+  is still live in Cloudflare, last deployed 23 June, and still carries <code>crons = ["0 13 * * SAT"]</code>.
+  It sends from the apex <code>hello@recordstops.com</code>, which the machine forbids because the apex
+  carries the reputation every listing page depends on, and its unsubscribe links cannot be parsed by
+  the site that receives them.</p>
+  <p><b>Fix:</b> delete the Worker, or disable its trigger. Deleting source is not deleting a deployment,
+  and that is the general lesson worth keeping.</p>
+</div>
+
+<div class="flag">
+  <h3>2. Nine things run that the estate does not know about</h3>
+  <p>Everything tagged "runs unregistered" above. Watchy cannot see them, none of them reports coverage,
+  and if one silently stopped tomorrow nothing anywhere would say so. That is the first law failing
+  quietly: nothing runs unless it is in the registry, and nine things do.</p>
+</div>
+
+<div class="flag">
+  <h3>3. Three routines write to the client CRM</h3>
+  <p><code>ascend:sparky</code>, <code>ascend:wordy</code> and <code>ascend:clippy</code> all write to
+  <code>ascend-db</code>, a client-facing production database holding real client records. The estate
+  already has the replacement: <code>estate-db.drafts</code> plus a rejections endpoint, which is what
+  Blogy already uses. <code>content_drafts</code> in the CRM duplicates it.</p>
+</div>
+
+<div class="flag">
+  <h3>4. Wordy reads a table that was retired</h3>
+  <p><code>ascend:wordy</code> takes part of its weekly input from <code>session_log</code>, retired on
+  7 September. Nothing has written to it since. It will not fail; it will produce something from an
+  empty input every Saturday, which is worse than failing, because a failure is visible.</p>
+</div>
+
+<div class="flag warn">
+  <h3>5. Two Patriot routines call the wrong hostname</h3>
+  <p><code>patriot:mailroom</code> and <code>patriot:tidy</code> both name
+  <code>patriot-directory.pages.dev</code> in their prompts, while the spec they fetch now gives them
+  <code>patriot.directory</code>. The prompt tells them, in its own words, to use the base the spec gives
+  them and never a hostname they remember, and then hands them one. Both hosts answer today, so nothing
+  is broken. <code>pages.dev</code> is a deployment artifact and the apex is the brand.</p>
+</div>
+
+<div class="flag warn">
+  <h3>6. RecordStops' database is bound by the wrong name</h3>
+  <p><code>wrangler.toml</code> declares <code>database_name = "DB"</code>, the binding name pasted into
+  the name field. The id is correct, so it works, but any tool that resolves by name will miss it. The
+  binding also exists only under <code>[env.production]</code>, so a local dev run gets no database at all
+  and every route throws at request time.</p>
+</div>
+
+<div class="flag ok">
+  <h3>The boundary that matters is holding</h3>
+  <p>The desk binds <code>jbmangum-desk</code> and <code>estate-db</code> and does not bind
+  <code>ascend-db</code>. Exactly one deployable binds the client CRM: <code>ascend-api</code>.
+  No client name, address or dollar amount has crossed into the estate or the desk.</p>
+</div>
+
+<h2><span class="n">7</span>Databases nothing binds</h2>
+<p class="hint">Click any column heading to sort.</p>
+<p class="lede">Seven of the 31 databases in the account have no configuration pointing at them anywhere
+on disk. Each is either finished work worth archiving or a project that ended without being cleaned up.</p>
+
+<div class="scroll">
+<table id="orphans">
+<thead>
+<tr><th data-sort="text">Database</th><th data-sort="text">What is left of it</th></tr>
+</thead>
+<tbody>
+<tr><td class="nm mono">kalshi-edge-db</td><td>Project deleted February 2026. Nothing on disk mentions it.</td></tr>
+<tr><td class="nm mono">lovenotes-db</td><td>Project declared dead July 2026. Only survives inside a mockup HTML file.</td></tr>
+<tr><td class="nm mono">clark-stark-workout</td><td>Nothing on disk mentions it at all.</td></tr>
+<tr><td class="nm mono">watchtower</td><td>Repo is a husk: build output and lockfiles, no source, no config.</td></tr>
+<tr><td class="nm mono">provenance</td><td>Every hit on disk is the ordinary English word.</td></tr>
+<tr><td class="nm mono">directory-factory-db</td><td>The old factory. Commented out in a <code>.backup</code> file.</td></tr>
+<tr><td class="nm mono">directory-machine-fleet</td><td>Named only in docs and mockups. Never bound.</td></tr>
+</tbody>
+</table>
+</div>
+
+<footer>
+  <p><b>How this was built, and how it should be built.</b> Every row came from a live source today:
+  the Claude routine API, <code>estate-db.registry</code>, <code>wrangler d1 list</code>, and a sweep of
+  every <code>wrangler.toml</code> on disk. But it is hand-assembled, and the estate's own first law says
+  a registry that is hand-maintained will drift, because every hand-maintained roster in this operation
+  has drifted, usually within three weeks.</p>
+  <p>The honest end state is a page generated from <code>registry</code>, <code>agent_runs</code> and a
+  config sweep, served by the estate, with this snapshot as the shape to aim at. Until then, treat this
+  as true on <b>10 September 2026</b> and check the live sources before acting on anything here.</p>
+</footer>
+
+</div>
+
+<script>
+/*
+ * Click a heading to sort that column, click again to reverse.
+ *
+ * Sorts the DOM rows in place rather than re-rendering from data, because there
+ * is no data: this page is the artifact. Numbers inside a cell are compared as
+ * numbers when the whole cell is one, so "5 crons" and "3 crons" order sensibly,
+ * and everything else falls back to a locale compare that puts an empty cell
+ * last in both directions. An empty cell means "nothing here", and nothing here
+ * is not a small value, it is an absence.
+ */
+(function () {
+  function cellText(row, i) {
+    var c = row.cells[i];
+    return c ? c.textContent.trim().replace(/\s+/g, ' ') : '';
+  }
+  function comparer(i, dir) {
+    return function (a, b) {
+      var x = cellText(a, i), y = cellText(b, i);
+      if (!x && !y) return 0;
+      if (!x) return 1;           // blanks always last
+      if (!y) return -1;
+      var nx = parseFloat(x), ny = parseFloat(y);
+      var bothNum = !isNaN(nx) && !isNaN(ny) && /^[\d.,\s]+$/.test(x) && /^[\d.,\s]+$/.test(y);
+      var r = bothNum ? nx - ny : x.localeCompare(y, undefined, { numeric: true, sensitivity: 'base' });
+      return dir === 'desc' ? -r : r;
+    };
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('table'), function (table) {
+    var head = table.tHead;
+    var body = table.tBodies[0];
+    if (!head || !body) return;
+    Array.prototype.forEach.call(head.rows[0].cells, function (th, i) {
+      if (!th.hasAttribute('data-sort')) return;
+      th.setAttribute('role', 'button');
+      th.setAttribute('tabindex', '0');
+      function run() {
+        var dir = th.classList.contains('asc') ? 'desc' : 'asc';
+        Array.prototype.forEach.call(head.rows[0].cells, function (o) {
+          o.classList.remove('asc', 'desc');
+        });
+        th.classList.add(dir);
+        var rows = Array.prototype.slice.call(body.rows);
+        rows.sort(comparer(i, dir));
+        rows.forEach(function (r) { body.appendChild(r); });
+      }
+      th.addEventListener('click', run);
+      th.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); run(); }
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
