@@ -5,7 +5,8 @@ Gmail scoped to `search_threads` and `get_thread` · model claude-opus-5
 Captured verbatim from the live config on 2026-09-07. It had never run at capture time;
 its first scheduled fire was 2026-09-10.
 
-**Archived. Do not follow. See ../instructions/spec.md for the live role.**
+**Archived. Do not follow. See ../instructions/spec.md for the live role**, which is
+Wordy, this half of the pair.
 
 ---
 

@@ -4,7 +4,10 @@ Trigger `trig_01MU9CEeSFpKFxfk3L82Fw3C` · cron `0 12 * * 1` · created by Brian
 Gmail scoped to `send_message` only · model claude-opus-5
 Captured verbatim from the live config on 2026-09-07, after its run that morning succeeded.
 
-**Archived. Do not follow. See ../instructions/spec.md for the live role.**
+**Archived. Do not follow. The live role for this half is Asky, at
+`roles/asky/instructions/spec.md`.** It stayed in this folder rather than moving, because
+the two files were captured together as one loop and splitting the archive would lose the
+only record that they ever were one.
 
 ---
 
