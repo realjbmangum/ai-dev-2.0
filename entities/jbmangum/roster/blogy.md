@@ -18,6 +18,14 @@ api:
   estate: https://estate-api.bmangum1.workers.dev/api
 guide:
   jbmangum/blog — https://estate-api.bmangum1.workers.dev/api/guides/jbmangum/blog
+# Which voice guide governs anything this hire writes.
+#
+# Looked up by PROPERTY first, so `blog` here means this property's own
+# blog guide and never a sibling directory's. If no guide is published for
+# it, the composed spec says STOP rather than falling back, because writing in a
+# voice nobody approved ships and looks like success.
+voice:     blog
+
 notes: |
   Saturday morning, after a full week of commits have been captured and judged. Loggy runs
   daily at 09:10, so by Saturday every weekday has been through it.

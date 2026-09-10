@@ -10,7 +10,20 @@
     "",
     "path is relative to the repo root. sha is read from that repo, not this one,",
     "so an edit to a guide shows as drift immediately rather than waiting for an",
-    "unrelated commit here."
+    "unrelated commit here.",
+    "",
+    "ON THE `entity` KEY, AND WHY PATRIOT IS NOT FILED UNDER 'directories'.",
+    "This column holds the brand a voice belongs to, and for a directory the brand",
+    "is the PROPERTY, not the entity. Patriot's guide sat under entity",
+    "'directories' while one directory existed, which was harmless and wrong in a",
+    "way that only shows up on the second one: the registry files both Patriot and",
+    "RecordStops under entity 'directories', so a lookup by entity would have",
+    "handed RecordStops' agents Patriot's voice. A record shop directory written",
+    "'plainspoken and proud, patriotic never partisan' is not a small mistake, it",
+    "is the whole brand. So directories register under their property key, and",
+    "spec composition looks up by property before entity. There is deliberately no",
+    "fallback from one property to another: a missing guide is a hard stop, and a",
+    "sibling's voice is worse than no voice."
   ],
   "guides": [
     {
@@ -28,11 +41,18 @@
       "path": "voice.md"
     },
     {
-      "entity": "directories",
+      "entity": "patriot",
       "surface": "listing",
       "repo": "realjbmangum/directory-machine",
       "root": "/Users/jbm/directory-machine",
       "path": "directories/patriot/voice/tone.md"
+    },
+    {
+      "entity": "recordstops",
+      "surface": "listing",
+      "repo": "realjbmangum/directory-machine",
+      "root": "/Users/jbm/directory-machine",
+      "path": "directories/records-stops/voice/tone.md"
     }
   ]
 }

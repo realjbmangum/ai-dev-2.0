@@ -20,6 +20,14 @@ access:
 api:
   directory: https://patriot.directory/api/automation
   estate:    https://estate-api.bmangum1.workers.dev/api
+# Which voice guide governs anything this hire writes.
+#
+# Looked up by PROPERTY first, so `listing` here means this property's own
+# listing guide and never a sibling directory's. If no guide is published for
+# it, the composed spec says STOP rather than falling back, because writing in a
+# voice nobody approved ships and looks like success.
+voice:     listing
+
 notes: |
   Daily, and cheap when there is nothing there. An empty run reports 0 of 0 and takes
   seconds, which is the point: it proves the whole path is alive on a day when no mail
